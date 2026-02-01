@@ -1,0 +1,6 @@
+@media (max-width: 768px) {
+  nav div {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
