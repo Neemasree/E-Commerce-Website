@@ -1,4 +1,4 @@
-# 🛒 GroceryMart - E-Commerce Platform
+# 🛒 Freshmart - E-Commerce Platform
 
 A full-stack, modern e-commerce platform for grocery shopping with an intuitive user interface, robust backend, and seamless shopping experience.
 
