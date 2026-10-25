@@ -1,6 +1,7 @@
 import { createContext, useState } from 'react';
-export const AuthContext = createContext(null);
 import { login as apiLogin, register as apiRegister } from '../services/api';
+
+export const AuthContext = createContext(null);
 
 function readStoredUser() {
   try {
@@ -45,4 +46,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
