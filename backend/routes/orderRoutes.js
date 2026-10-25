@@ -55,27 +55,44 @@ router.post('/', authenticateToken, async (req, res) => {
     const deliveryFee = subtotal >= 500 ? 0 : 50;
     const total = subtotal + deliveryFee;
 
-    // Reduce stock only when enough inventory remains. Any failed update returns a conflict.
-    for (const item of validatedItems) {
-      const updated = await Product.findOneAndUpdate(
-        { _id: item.product, stock: { $gte: item.quantity } },
-        { $inc: { stock: -item.quantity } },
-        { new: true }
-      );
-      if (!updated) {
-        return res.status(409).json({ message: `Stock changed during checkout for ${item.name}; please refresh your cart` });
+    // Use a MongoDB transaction so inventory decrements and order creation succeed or fail together.
+    const session = await mongoose.startSession();
+    let createdOrder;
+
+    try {
+      await session.withTransaction(async () => {
+        for (const item of validatedItems) {
+          const updated = await Product.findOneAndUpdate(
+            { _id: item.product, stock: { $gte: item.quantity } },
+            { $inc: { stock: -item.quantity } },
+            { new: true, session }
+          );
+          if (!updated) {
+            const stockError = new Error(`Stock changed during checkout for ${item.name}; please refresh your cart`);
+            stockError.code = 'INSUFFICIENT_STOCK';
+            throw stockError;
+          }
+        }
+
+        const [order] = await Order.create([{
+          user: req.user.id,
+          items: validatedItems,
+          total,
+          address,
+          paymentMethod
+        }], { session });
+        createdOrder = order;
+      });
+    } catch (error) {
+      if (error.code === 'INSUFFICIENT_STOCK') {
+        return res.status(409).json({ message: error.message });
       }
+      throw error;
+    } finally {
+      await session.endSession();
     }
 
-    const order = await Order.create({
-      user: req.user.id,
-      items: validatedItems,
-      total,
-      address,
-      paymentMethod
-    });
-
-    return res.status(201).json(order);
+    return res.status(201).json(createdOrder);
   } catch (error) {
     console.error('Order creation failed:', error);
     return res.status(500).json({ message: 'Unable to create order' });
