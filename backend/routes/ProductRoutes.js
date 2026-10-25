@@ -1,91 +1,102 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
-// Get all products
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 router.get('/', async (req, res) => {
   try {
     const { category, search, sortBy } = req.query;
-    let query = {};
+    const query = {};
 
-    // Filter by category
-    if (category && category !== 'all') {
-      query.category = { $regex: category, $options: 'i' };
+    if (typeof category === 'string' && category.trim() && category !== 'all') {
+      query.category = { $regex: escapeRegex(category.trim()), $options: 'i' };
     }
 
-    // Search functionality
-    if (search) {
+    if (typeof search === 'string' && search.trim()) {
+      const term = { $regex: escapeRegex(search.trim()), $options: 'i' };
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { name: term },
+        { category: term },
+        { description: term }
       ];
     }
 
-    let products = await Product.find(query);
+    const sort = {
+      'price-low': { offerPrice: 1, price: 1 },
+      'price-high': { offerPrice: -1, price: -1 },
+      name: { name: 1 }
+    }[sortBy] || { name: 1 };
 
-    // Sort products
-    if (sortBy) {
-      switch (sortBy) {
-        case 'price-low':
-          products.sort((a, b) => (a.offerPrice || a.price) - (b.offerPrice || b.price));
-          break;
-        case 'price-high':
-          products.sort((a, b) => (b.offerPrice || b.price) - (a.offerPrice || a.price));
-          break;
-        case 'name':
-          products.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        default:
-          break;
-      }
-    }
-
+    const products = await Product.find(query).sort(sort).lean();
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching products', error: error.message });
+    console.error('Product listing failed:', error);
+    res.status(500).json({ message: 'Unable to fetch products' });
   }
 });
 
-// Get single product
 router.get('/:id', async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid product ID' });
+  }
+
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching product', error: error.message });
+    console.error('Product lookup failed:', error);
+    res.status(500).json({ message: 'Unable to fetch product' });
   }
 });
 
-// Create product (admin only)
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const product = new Product(req.body);
-    await product.save();
+    const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating product', error: error.message });
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: 'Invalid product data' });
+    }
+    console.error('Product creation failed:', error);
+    res.status(500).json({ message: 'Unable to create product' });
   }
 });
 
-// Update product (admin only)
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid product ID' });
+  }
+
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true, strict: 'throw' }
+    );
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
     res.json(product);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating product', error: error.message });
+    if (error.name === 'ValidationError' || error.name === 'StrictModeError') {
+      return res.status(400).json({ message: 'Invalid product data' });
+    }
+    console.error('Product update failed:', error);
+    res.status(500).json({ message: 'Unable to update product' });
   }
 });
 
-// Delete product (admin only)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid product ID' });
+  }
+
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
@@ -93,7 +104,8 @@ router.delete('/:id', async (req, res) => {
     }
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting product', error: error.message });
+    console.error('Product deletion failed:', error);
+    res.status(500).json({ message: 'Unable to delete product' });
   }
 });
 
