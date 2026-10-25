@@ -145,7 +145,7 @@ app.post("/api/auth/login", async (req, res) => {
     if (typeof email !== "string" || typeof password !== "string" || !user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "secretkey");
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: "Login failed" });
