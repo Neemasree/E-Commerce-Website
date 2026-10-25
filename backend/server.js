@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
@@ -118,7 +119,6 @@ const initializeDatabase = async () => {
 // Middleware for authentication
 const { authenticateToken, requireAdmin } = require("./middleware/auth");
 
-const User = require("./models/User");
 const Order = require("./models/Order");
 
 // Auth routes
@@ -174,8 +174,6 @@ app.get("/api/admin/orders", authenticateToken, requireAdmin, async (req, res) =
   }
 });
 
-const User = require("./models/User");
-const Order = require("./models/Order");
 
 // Image proxy route to handle CORS issues
 app.get("/api/proxy-image", async (req, res) => {
