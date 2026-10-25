@@ -141,7 +141,7 @@ Run scripts from the relevant folder. Backend and frontend dependencies are mana
 - `npm run lint` — run ESLint.
 - `npm run preview` — preview the production build.
 
-The backend currently has a placeholder `npm test` script that exits with an error; automated backend tests are not yet configured.
+The backend `npm test` command runs the built-in Node.js test runner. Current tests cover admin-role middleware; route integration and checkout transaction tests are still needed.
 
 ## Security and known limitations
 
@@ -149,8 +149,8 @@ The backend currently has a placeholder `npm test` script that exits with an err
 - The product mutation endpoints require authentication and an admin role.
 - `.env`, environment-specific files, dependencies, logs, and build output are excluded by `.gitignore`.
 - Removing a file from the latest commit does not erase it from historical Git commits. Rotate any credentials that may have been exposed in prior history.
-- The repository has previously tracked `node_modules`; the ignore rules alone do not remove existing tracked dependencies. Complete that cleanup and review Git history.
-- Review order creation and inventory updates for atomicity and server-side price calculation before production use.
+- Installed `node_modules` folders have been removed from the current tracked tree. Git history may still contain older copies; rewrite history only if you deliberately choose to clean old commits.
+- Order creation calculates prices on the server and wraps stock decrements plus order persistence in a MongoDB transaction. Transactions require a MongoDB deployment that supports them (such as a replica set); verify this against your target environment.
 - Real card/UPI processing requires a verified payment-provider integration. Current payment method labels are not proof that payments are processed.
 - Deployment URLs, automated test status, screenshots, and license information should be added only after they have been verified.
 
