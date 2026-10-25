@@ -4,6 +4,10 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  throw new Error("JWT_SECRET must be configured with at least 32 characters.");
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
