@@ -1,221 +1,163 @@
-# 🛒 Freshmart - E-Commerce Platform
+# 🛒 Freshmart — MERN Grocery E-Commerce Platform
 
-A full-stack, modern e-commerce platform for grocery shopping with an intuitive user interface, robust backend, and seamless shopping experience.
+Freshmart is a full-stack grocery shopping application built with React, Vite, Node.js, Express, and MongoDB. The app includes a searchable product catalog, shopping cart, checkout flow, customer order history, and protected admin screens.
 
-## ✨ Key Features
+> **Project status:** Portfolio/learning project. COD/Card/UPI are stored as order payment-method choices; do not treat card or UPI checkout as a real payment gateway unless a provider integration is added and verified.
 
-### Customer Features
-- **Homepage** - Hero section with auto-sliding banners and featured categories
-- **Product Catalog** - Browse 185+ products with filtering and sorting capabilities
-- **Advanced Search** - Search by product name across all categories
-- **Smart Categories** - Filter products by Vegetables, Dairy, Fruits, Beverages, and Grains
-- **Shopping Cart** - Add/remove items, adjust quantities, with persistent storage
-- **Checkout** - Complete address form with validation and multiple payment options
-- **Order Management** - View order history and reorder functionality
-- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices
+## Features
 
-### Technical Features
-- **Real-time Stock Updates** - Accurate inventory management
-- **Price Calculations** - Automatic total with dynamic delivery fees (Free above ₹500)
-- **Discount Badges** - Visual indicators for promotional products
-- **Smooth Animations** - Enhanced UX with CSS transitions and animations
-- **Secure Payments** - Support for COD, Card, and UPI payments
-- **Data Persistence** - MongoDB backend for reliable data storage
+### Shopping experience
+- Responsive homepage with promotional banners and featured categories.
+- Product catalog with name/category/description search, category filtering, and sorting.
+- Product details and stock information.
+- Cart with quantity controls and persistent client-side state.
+- Checkout form with address, email, phone, pincode, and payment-method validation.
+- Order history, order status display, and reorder flow.
 
-## 🏗️ Project Structure
+### Accounts and administration
+- Registration and login with bcrypt password hashing and JWT authentication.
+- Role-aware admin pages.
+- Admin order listing.
+- Product create, update, and delete endpoints guarded by JWT authentication and an admin-role check.
 
+### Stack
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, Vite, React Router, Axios, CSS |
+| Backend | Node.js, Express |
+| Database | MongoDB, Mongoose |
+| Authentication | JSON Web Tokens, bcryptjs |
+| Tooling | npm, ESLint |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Customer[Customer / Admin] --> UI[React + Vite Frontend]
+    UI -->|Axios + Bearer token| API[Express REST API]
+    API --> Auth[JWT Authentication / Role Checks]
+    API --> DB[(MongoDB via Mongoose)]
+    DB --> API
+    API --> UI
 ```
+
+## Repository layout
+
+```text
 E-Commerce-Website/
-├── frontend/                 # React + Vite frontend application
-│   ├── src/
-│   ├── public/
-│   └── package.json
-├── backend/                  # Node.js + Express backend server
-│   ├── models/
-│   ├── routes/
-│   ├── controllers/
-│   └── package.json
+├── frontend/             # React + Vite application
+├── backend/
+│   ├── middleware/       # Authentication and admin authorization
+│   ├── models/           # Mongoose models
+│   ├── routes/           # API routes
+│   ├── .env.example      # Safe local environment template
+│   └── server.js         # Express app and API endpoints
 ├── .gitignore
-├── package.json             # Root-level dependencies
-├── README.md                # This file
-├── FEATURES.md              # Detailed feature list
-├── SETUP_GUIDE.md           # Installation instructions
-├── FINAL_SETUP.md           # Final configuration guide
-├── START.bat                # Quick start script for Windows
-└── OTHER_DOCS.md            # Additional documentation
+├── package.json
+└── README.md
 ```
 
-## 🛠️ Tech Stack
+## Prerequisites
 
-| Component | Technology |
-|-----------|-----------|
-| **Frontend** | React, Vite, CSS3 |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB |
-| **Authentication** | JWT (JSON Web Tokens) |
-| **Security** | bcryptjs |
-| **HTTP Client** | Axios |
-| **Routing** | React Router DOM |
+- Node.js (use a currently supported LTS release)
+- npm
+- MongoDB locally or a MongoDB connection string
 
-## 📋 Prerequisites
+## Local setup
 
-Before getting started, ensure you have the following installed:
+### 1. Clone and install
 
-- **Node.js** (v14 or higher) - [Download](https://nodejs.org/)
-- **MongoDB** (Community Edition) - [Download](https://www.mongodb.com/try/download/community)
-- **Git** (optional) - [Download](https://git-scm.com/)
-
-## 🚀 Quick Start
-
-### Option 1: Automated Setup (Windows)
-Simply run the batch file:
 ```bash
-START.bat
-```
-
-### Option 2: Manual Setup
-
-**1. Install Backend Dependencies**
-```bash
+git clone https://github.com/Neemasree/E-Commerce-Website.git
+cd E-Commerce-Website
+npm install
 cd backend
 npm install
-```
-
-**2. Install Frontend Dependencies**
-```bash
 cd ../frontend
 npm install
 ```
 
-**3. Start MongoDB**
-```bash
-mongod
-```
-Or use MongoDB Compass (GUI tool)
+### 2. Configure backend environment
 
-**4. Configure Environment Variables**
+Create `backend/.env` based on `backend/.env.example`:
 
-Create a `.env` file in the backend directory:
-```
+```dotenv
 MONGO_URI=mongodb://127.0.0.1:27017/grocery_db
-JWT_SECRET=replace_with_a_long_random_secret
+JWT_SECRET=replace_with_a_random_secret_at_least_32_characters_long
 PORT=5000
 ```
 
-**5. Start the Backend Server**
+Use a unique, randomly generated secret for your own machine and a different secret in production. Never commit `.env` or real credentials. If a real secret was ever committed, rotate it even after removing the file from the current branch.
+
+### 3. Start the backend
+
 ```bash
 cd backend
-npm start
+npm run dev
 ```
 
-**6. Start the Frontend Development Server**
+The API defaults to `http://localhost:5000`.
+
+### 4. Start the frontend
+
+In a second terminal:
+
 ```bash
 cd frontend
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`. The backend starts on the port configured in `backend/.env`.
+Vite normally serves the frontend at `http://localhost:5173`.
 
-## 📖 Available Scripts
+## API overview
 
-### Backend
-```bash
-npm start          # Start production server
-npm run dev        # Start development server with nodemon
-npm test           # Run backend tests
-```
+| Method | Endpoint | Purpose | Access |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | Register a customer | Public |
+| POST | `/api/auth/login` | Log in | Public |
+| GET | `/api/products` | List/search/filter/sort products | Public |
+| GET | `/api/products/:id` | Fetch product details | Public |
+| POST | `/api/products` | Create a product | Admin token |
+| PUT | `/api/products/:id` | Update a product | Admin token |
+| DELETE | `/api/products/:id` | Delete a product | Admin token |
+| POST | `/api/orders` | Place an order | Authenticated customer |
+| GET | `/api/orders` | View own orders | Authenticated customer |
+| GET | `/api/admin/orders` | View all orders | Admin token |
 
-### Frontend
-```bash
-npm run dev        # Start development server
-npm run build      # Build for production
-npm run preview    # Preview production build
-npm test           # Run frontend tests
-```
+All protected requests should send `Authorization: Bearer <token>`.
 
-## 🧪 Testing
+## Scripts
 
-Refer to [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) for comprehensive testing guidelines and procedures.
+Run scripts from the relevant folder.
 
-## 📚 Documentation
+**Backend**
+- `npm start` — start the server.
+- `npm run dev` — start with nodemon.
+- `npm run seed` — run the product seed script.
 
-- **[FEATURES.md](FEATURES.md)** - Complete feature list for customers and admins
-- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Detailed installation and configuration guide
-- **[FINAL_SETUP.md](FINAL_SETUP.md)** - Final setup and deployment instructions
-- **[TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)** - Testing procedures and checklist
-- **[TODO.md](TODO.md)** - Future enhancements and roadmap
+**Frontend**
+- `npm run dev` — start Vite.
+- `npm run build` — create a production build.
+- `npm run lint` — run ESLint.
+- `npm run preview` — preview the production build.
 
-## 🔐 Security Features
+The backend currently has a placeholder `npm test` script that exits with an error; automated backend tests are not yet configured.
 
-- Password encryption using bcryptjs
-- JWT-based authentication and authorization
-- Secure API endpoints with token validation
-- Input validation and sanitization
-- CORS protection
-- Secure session management
+## Security and known limitations
 
-## 📦 Database Schema
+- Configure `JWT_SECRET` with a strong random value of at least 32 characters. The backend refuses to start without it.
+- The product mutation endpoints require authentication and an admin role.
+- `.env`, environment-specific files, dependencies, logs, and build output are excluded by `.gitignore`.
+- Removing a file from the latest commit does not erase it from historical Git commits. Rotate any credentials that may have been exposed in prior history.
+- The repository has previously tracked `node_modules`; the ignore rules alone do not remove existing tracked dependencies. Complete that cleanup and review Git history.
+- Review order creation and inventory updates for atomicity and server-side price calculation before production use.
+- Real card/UPI processing requires a verified payment-provider integration. Current payment method labels are not proof that payments are processed.
+- Deployment URLs, automated test status, screenshots, and license information should be added only after they have been verified.
 
-The application uses MongoDB with the following main collections:
-- **Users** - Customer accounts and profiles
-- **Products** - Product catalog with pricing and inventory
-- **Orders** - Order history and tracking
-- **Categories** - Product categories
+## License
 
-## 🤝 Contributing
+No license has been verified for this repository yet. Add a license file if you intend to publish reuse permissions.
 
-Contributions are welcome! Please follow these steps:
+## Author
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Make your changes
-4. Commit them (`git commit -m 'Add some AmazingFeature'`)
-5. Push to the branch (`git push origin feature/AmazingFeature`)
-6. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👨‍💻 Author
-
-**Neema Sree** - [GitHub Profile](https://github.com/Neemasree)
-
-## 🆘 Troubleshooting
-
-### MongoDB Connection Issues
-- Ensure MongoDB is running (`mongod`)
-- Check connection string in `.env`
-- Verify MongoDB is listening on port 27017
-
-### Port Already in Use
-- Backend: Change PORT in `.env`
-- Frontend: Specify port with `npm run dev -- --port 3000`
-
-### CORS Errors
-- Verify backend URL in frontend API configuration
-- Check CORS settings in Express backend
-
-### Module Not Found
-- Delete `node_modules` folder
-- Run `npm install` again
-- Clear npm cache: `npm cache clean --force`
-
-## 💡 Tips & Best Practices
-
-1. **Development**: Use `npm run dev` for hot-reload capabilities
-2. **Testing**: Run tests before pushing code
-3. **Database**: Keep backups of important data
-4. **Security**: Never commit `.env` files to version control
-5. **Performance**: Monitor bundle size and optimize images
-
-## 📞 Support & Contact
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Contact the maintainer directly
-- Check existing issues for solutions
-
----
-
-**Happy Shopping! 🎉** — Freshmart is a learning project; verify production readiness and payment-provider integration before real-world use.
+**Neema Sree** — [GitHub](https://github.com/Neemasree)
