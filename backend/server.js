@@ -77,7 +77,7 @@ const initializeDatabase = async () => {
       console.log(`✅ Database initialized with ${products.length} products`);
       
       // Create admin user if doesn't exist
-      const User = require('./models/User');
+      
       const bcrypt = require('bcryptjs');
       
       const adminExists = await User.findOne({ email: 'admin@grocerymart.com' });
@@ -118,8 +118,10 @@ const initializeDatabase = async () => {
 
 // Middleware for authentication
 const { authenticateToken, requireAdmin } = require("./middleware/auth");
-
+const User = require("./models/User");
 const Order = require("./models/Order");
+
+
 
 // Auth routes
 app.post("/api/auth/register", async (req, res) => {
