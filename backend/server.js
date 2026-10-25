@@ -196,11 +196,8 @@ app.get("/api/orders", authenticateToken, async (req, res) => {
 });
 
 // Admin: Get all orders
-app.get("/api/admin/orders", authenticateToken, async (req, res) => {
+app.get("/api/admin/orders", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: "Admin access required" });
-    }
     const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
