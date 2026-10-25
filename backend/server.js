@@ -156,58 +156,23 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// Order routes
-app.post("/api/orders", authenticateToken, async (req, res) => {
-  try {
-    const { items, total, address, paymentMethod } = req.body;
-    
-    // Update stock for each item
-    const Product = require('./models/Product');
-    for (const item of items) {
-      await Product.findByIdAndUpdate(
-        item.product,
-        { $inc: { stock: -item.quantity } },
-        { new: true }
-      );
-    }
-    
-    const order = await Order.create({ 
-      user: req.user.id, 
-      items, 
-      total, 
-      address,
-      paymentMethod: paymentMethod || 'cod'
-    });
-    
-    res.status(201).json(order);
-  } catch (err) {
-    console.error('Order creation error:', err);
-    res.status(500).json({ message: "Order creation failed" });
-  }
-});
+// Order and inventory endpoints are defined in a dedicated router.
+const orderRoutes = require("./routes/orderRoutes");
+app.use("/api/orders", orderRoutes);
 
-app.get("/api/orders", authenticateToken, async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user.id }).populate("items.product");
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch orders" });
-  }
-});
-
-// Admin: Get all orders
+// Admin order listing is protected by both JWT authentication and role authorization.
 app.get("/api/admin/orders", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
     res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch orders" });
+  } catch (error) {
+    console.error("Admin order listing failed:", error);
+    res.status(500).json({ message: "Unable to fetch admin orders" });
   }
 });
 
-// Routes
-const productRoutes = require("./routes/productRoutes");
-app.use("/api/products", productRoutes);
+const User = require("./models/User");
+const Order = require("./models/Order");
 
 // Image proxy route to handle CORS issues
 app.get("/api/proxy-image", async (req, res) => {
