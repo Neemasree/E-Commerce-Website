@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
-import { getOrders } from "../services/api";
+import api, { getOrders } from "../services/api";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -56,9 +56,7 @@ const Orders = () => {
     if (!window.confirm("Cancel this order?")) return;
 
     try {
-      await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
-        method: "PUT",
-      });
+      await api.put(`/orders/${orderId}/cancel`);
 
       setOrders((prev) =>
         prev.map((o) =>
