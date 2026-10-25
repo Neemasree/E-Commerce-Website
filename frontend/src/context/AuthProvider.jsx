@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { AuthContext } from './AuthContext';
+import { createContext, useState } from 'react';
+const AuthContext = createContext(null);
 import { login as apiLogin, register as apiRegister } from '../services/api';
 
 function readStoredUser() {
@@ -46,4 +46,4 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthProvider;
+export { AuthContext, AuthProvider };
