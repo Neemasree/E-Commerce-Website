@@ -1,7 +1,6 @@
-import { createContext, useState } from 'react';
+import { useState } from 'react';
+import { AuthContext } from './AuthContext';
 import { login as apiLogin, register as apiRegister } from '../services/api';
-
-export const AuthContext = createContext(null);
 
 function readStoredUser() {
   try {
