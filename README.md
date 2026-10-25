@@ -96,7 +96,7 @@ cd backend
 npm run dev
 ```
 
-The API defaults to `http://localhost:5000`.
+The API defaults to `http://localhost:5000`. When deploying the frontend, set `VITE_API_BASE_URL` to the backend API origin ending in `/api` (for example, `https://your-backend.example/api`).
 
 ### 4. Start the frontend
 
@@ -128,7 +128,7 @@ All protected requests should send `Authorization: Bearer <token>`.
 
 ## Scripts
 
-Run scripts from the relevant folder.
+Run scripts from the relevant folder. Backend and frontend dependencies are managed separately.
 
 **Backend**
 - `npm start` — start the server.
