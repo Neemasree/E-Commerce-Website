@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
@@ -113,18 +112,7 @@ const User = require("./models/User");
 const Order = require("./models/Order");
 
 // Middleware for authentication
-const authenticateToken = (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-  if (!token) return res.status(401).json({ message: "Access denied" });
-
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET || "secretkey");
-    req.user = verified;
-    next();
-  } catch (err) {
-    res.status(400).json({ message: "Invalid token" });
-  }
-};
+const { authenticateToken, requireAdmin } = require("./middleware/auth");
 
 // Auth routes
 app.post("/api/auth/register", async (req, res) => {
@@ -140,7 +128,7 @@ app.post("/api/auth/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hashedPassword });
     
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "secretkey");
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
     res.status(201).json({ 
       token, 
       user: { id: user._id, name: user.name, email: user.email, role: user.role } 
@@ -154,7 +142,7 @@ app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (typeof email !== "string" || typeof password !== "string" || !user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "secretkey");
