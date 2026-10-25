@@ -123,4 +123,5 @@ export const getOrders = async () => {
   }
 };
 
+export { api };
 export default api;
