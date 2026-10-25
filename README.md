@@ -35,8 +35,8 @@ E-Commerce-Website/
 │   ├── routes/
 │   ├── controllers/
 │   └── package.json
-├── node_modules/
-├── package.json             # Root dependencies
+├── .gitignore
+├── package.json             # Root-level dependencies
 ├── README.md                # This file
 ├── FEATURES.md              # Detailed feature list
 ├── SETUP_GUIDE.md           # Installation instructions
@@ -97,10 +97,9 @@ Or use MongoDB Compass (GUI tool)
 
 Create a `.env` file in the backend directory:
 ```
-MONGODB_URI=mongodb://localhost:27017/grocerymart
-JWT_SECRET=your_secret_key_here
+MONGO_URI=mongodb://127.0.0.1:27017/grocery_db
+JWT_SECRET=replace_with_a_long_random_secret
 PORT=5000
-NODE_ENV=development
 ```
 
 **5. Start the Backend Server**
@@ -115,7 +114,7 @@ cd frontend
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The frontend will be available at `http://localhost:5173`. The backend starts on the port configured in `backend/.env`.
 
 ## 📖 Available Scripts
 
@@ -219,4 +218,4 @@ For issues, questions, or suggestions:
 
 ---
 
-**Happy Shopping! 🎉** - Enjoy using GroceryMart for all your grocery needs.
+**Happy Shopping! 🎉** — Freshmart is a learning project; verify production readiness and payment-provider integration before real-world use.
