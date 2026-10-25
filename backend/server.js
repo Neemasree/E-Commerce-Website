@@ -160,7 +160,9 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // Order and inventory endpoints are defined in a dedicated router.
+const productRoutes = require("./routes/ProductRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
 // Admin order listing is protected by both JWT authentication and role authorization.
