@@ -14,7 +14,7 @@ function readStoredUser() {
   }
 }
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(readStoredUser);
 
   const login = async (email, password) => {
@@ -45,3 +45,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;
