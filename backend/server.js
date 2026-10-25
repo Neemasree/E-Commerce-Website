@@ -112,11 +112,14 @@ const initializeDatabase = async () => {
 };
 
 // Models
-const User = require("./models/User");
-const Order = require("./models/Order");
+
+
 
 // Middleware for authentication
 const { authenticateToken, requireAdmin } = require("./middleware/auth");
+
+const User = require("./models/User");
+const Order = require("./models/Order");
 
 // Auth routes
 app.post("/api/auth/register", async (req, res) => {
