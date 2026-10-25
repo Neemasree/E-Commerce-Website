@@ -1,3 +1,2 @@
-import { createContext } from 'react';
-
-export const AuthContext = createContext(null);
+// AuthContext and AuthProvider are colocated in AuthProvider.jsx for Fast Refresh compatibility.
+export { AuthContext, AuthProvider } from './AuthProvider';
