@@ -45,7 +45,7 @@ flowchart LR
 
 ```text
 E-Commerce-Website/
-├── frontend/             # React + Vite application
+├── frontend/             # React + Vite application, .env.example
 ├── backend/
 │   ├── middleware/       # Authentication and admin authorization
 │   ├── models/           # Mongoose models
@@ -126,7 +126,7 @@ The API defaults to `http://localhost:5000`. The backend allows browser origins 
 
 ### 6. Start the frontend
 
-In a second terminal:
+Copy `frontend/.env.example` to `frontend/.env.local` and set `VITE_API_BASE_URL` to the backend API URL. Then, in a second terminal:
 
 ```bash
 cd frontend
