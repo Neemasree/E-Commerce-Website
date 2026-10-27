@@ -21,12 +21,15 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item._id === product._id);
+      const stockLimit = Number.isInteger(product.stock) ? Math.max(0, product.stock) : 99;
+      if (stockLimit === 0) return prev;
 
+      const existing = prev.find((item) => item._id === product._id);
       if (existing) {
+        if (existing.quantity >= stockLimit) return prev;
         return prev.map((item) =>
           item._id === product._id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, ...product, quantity: Math.min(stockLimit, item.quantity + 1) }
             : item
         );
       }
@@ -46,9 +49,14 @@ export const CartProvider = ({ children }) => {
     }
 
     setCartItems((prev) =>
-      prev.map((item) =>
-        item._id === productId ? { ...item, quantity: qty } : item
-      )
+      prev.map((item) => {
+        if (item._id !== productId) return item;
+        const stockLimit = Number.isInteger(item.stock) ? item.stock : 99;
+        const nextQuantity = stockLimit <= 0
+          ? Math.min(qty, item.quantity)
+          : Math.min(qty, stockLimit);
+        return { ...item, quantity: Math.max(1, nextQuantity) };
+      })
     );
   };
 
@@ -63,6 +71,9 @@ export const CartProvider = ({ children }) => {
   const getCartItemsCount = () =>
     cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const getItemQuantity = (productId) =>
+    cartItems.find((item) => item._id === productId)?.quantity || 0;
+
   return (
     <CartContext.Provider
       value={{
@@ -73,6 +84,7 @@ export const CartProvider = ({ children }) => {
         clearCart,
         getCartTotal,
         getCartItemsCount,
+        getItemQuantity,
       }}
     >
       {children}
