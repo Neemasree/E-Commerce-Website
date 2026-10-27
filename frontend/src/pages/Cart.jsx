@@ -83,6 +83,12 @@ const Cart = () => {
                     {item.name}
                   </Link>
                   <p className="item-category">{item.category}</p>
+                  {Number.isInteger(item.stock) && item.quantity > item.stock && (
+                    <p className="stock-warning" role="alert">Only {item.stock} left in stock. Reduce the quantity to continue.</p>
+                  )}
+                  {Number.isInteger(item.stock) && item.stock <= 0 && (
+                    <p className="stock-warning" role="alert">This product is currently out of stock.</p>
+                  )}
                   
                   <div className="item-pricing">
                     {item.offerPrice ? (
@@ -102,6 +108,7 @@ const Cart = () => {
                       onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
                       className="quantity-btn"
                       disabled={item.quantity <= 1 || isUpdating[item._id]}
+                      aria-label={`Decrease quantity of ${item.name}`}
                     >
                       -
                     </button>
@@ -115,7 +122,8 @@ const Cart = () => {
                     <button 
                       onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
                       className="quantity-btn"
-                      disabled={isUpdating[item._id]}
+                      disabled={isUpdating[item._id] || (Number.isInteger(item.stock) && (item.stock <= 0 || item.quantity >= item.stock))}
+                      aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
                     </button>
