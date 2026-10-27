@@ -27,7 +27,7 @@ const Home = () => {
       setCurrentSlide(prev => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(slideInterval);
-  }, []);
+  }, [heroSlides.length]);
 
   const fetchFeaturedProducts = async () => {
     try {
