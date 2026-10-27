@@ -12,6 +12,9 @@ dist/
 build/
 coverage/
 
+# CI/local audit reports
+*-audit.json
+
 # Logs
 *.log
 npm-debug.log*
