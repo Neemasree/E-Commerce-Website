@@ -169,7 +169,7 @@ Run scripts from the relevant folder. Backend and frontend dependencies are mana
 - `npm run lint` — run ESLint.
 - `npm run preview` — preview the production build.
 
-The backend `npm test` command runs the built-in Node.js test runner against dedicated `tests/*.test.js` files. Current tests cover admin-role middleware and bearer-token handling; route integration and checkout transaction tests are still needed.
+The backend `npm test` command runs the built-in Node.js test runner against dedicated `tests/*.test.js` files. Current tests cover JWT/admin middleware, product/order schema validation, checkout pricing and inventory updates, and cancellation stock restoration using mocked database calls. A real MongoDB replica-set integration suite and end-to-end browser tests are still needed.
 
 ## Security and known limitations
 
