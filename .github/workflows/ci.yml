@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -29,6 +29,8 @@ jobs:
         run: |
           npm audit --prefix backend --json > backend-audit.json || true
           node scripts/summarize-npm-audit.cjs backend-audit.json
+      - name: Fail on backend dependency advisories
+        run: npm audit --prefix backend --audit-level=low
       - name: Check backend JavaScript syntax
         run: find backend -type f -name '*.js' -not -path '*/node_modules/*' -print0 | xargs -0 -n1 node --check
       - name: Run backend tests
@@ -39,9 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -52,6 +54,8 @@ jobs:
         run: |
           npm audit --prefix frontend --json > frontend-audit.json || true
           node scripts/summarize-npm-audit.cjs frontend-audit.json
+      - name: Fail on frontend dependency advisories
+        run: npm audit --prefix frontend --audit-level=low
       - name: Lint frontend
         run: npm run lint --prefix frontend
       - name: Build frontend
