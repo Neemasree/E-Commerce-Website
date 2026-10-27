@@ -6,18 +6,8 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
   const [isAdding, setIsAdding] = useState(false);
 
-  // Proxy image to avoid CORS / ORB issues
-  const getProxiedImageUrl = (imageUrl) => {
-    if (!imageUrl) {
-      return "https://placehold.co/400x400/e8e8e8/666?text=No+Image";
-    }
-    if (imageUrl.startsWith("http://localhost") || imageUrl.startsWith("/")) {
-      return imageUrl;
-    }
-    return `http://localhost:5000/api/proxy-image?url=${encodeURIComponent(
-      imageUrl
-    )}`;
-  };
+  const getImageUrl = (imageUrl) =>
+    imageUrl || "https://placehold.co/400x400/e8e8e8/666?text=No+Image";
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -45,7 +35,7 @@ const ProductCard = ({ product }) => {
 
           <div className="product-image-container">
             <img
-              src={getProxiedImageUrl(product.image)}
+              src={getImageUrl(product.image)}
               alt={product.name}
               className="product-image"
               onError={(e) =>
