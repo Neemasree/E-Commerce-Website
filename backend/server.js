@@ -11,7 +11,7 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20kb' }));
 
 // MongoDB connection and auto-seed
 mongoose
@@ -76,34 +76,6 @@ const initializeDatabase = async () => {
       await Product.insertMany(products);
       console.log(`✅ Database initialized with ${products.length} products`);
       
-      // Create admin user if doesn't exist
-      
-      const bcrypt = require('bcryptjs');
-      
-      const adminExists = await User.findOne({ email: 'admin@grocerymart.com' });
-      if (!adminExists) {
-        const hashedPassword = await bcrypt.hash('admin123', 10);
-        await User.create({
-          name: 'Admin',
-          email: 'admin@grocerymart.com',
-          password: hashedPassword,
-          role: 'admin'
-        });
-        console.log('✅ Admin user created: admin@grocerymart.com / admin123');
-      }
-      
-      // Create demo user if doesn't exist
-      const demoExists = await User.findOne({ email: 'demo@grocerymart.com' });
-      if (!demoExists) {
-        const hashedPassword = await bcrypt.hash('demo123', 10);
-        await User.create({
-          name: 'Demo User',
-          email: 'demo@grocerymart.com',
-          password: hashedPassword,
-          role: 'user'
-        });
-        console.log('✅ Demo user created: demo@grocerymart.com / demo123');
-      }
     } else {
       console.log(`✅ Database already has ${productCount} products`);
     }
@@ -125,39 +97,62 @@ const Order = require("./models/Order");
 
 // Auth routes
 app.post("/api/auth/register", async (req, res) => {
+  const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+
+  if (name.length < 2 || name.length > 80) {
+    return res.status(400).json({ message: "Name must be between 2 and 80 characters" });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+    return res.status(400).json({ message: "Enter a valid email address" });
+  }
+  if (password.length < 8 || password.length > 128) {
+    return res.status(400).json({ message: "Password must be between 8 and 128 characters" });
+  }
+
   try {
-    const { name, email, password } = req.body;
-    
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(409).json({ message: "An account with this email already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
     const user = await User.create({ name, email, password: hashedPassword });
-    
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
-    res.status(201).json({ 
-      token, 
-      user: { id: user._id, name: user.name, email: user.email, role: user.role } 
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "12h" });
+
+    return res.status(201).json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
-    res.status(400).json({ message: "Registration failed" });
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "An account with this email already exists" });
+    }
+    console.error("Registration failed:", err);
+    return res.status(500).json({ message: "Unable to register account" });
   }
 });
 
 app.post("/api/auth/login", async (req, res) => {
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+
+  if (!email || !password || password.length > 128) {
+    return res.status(400).json({ message: "Invalid credentials" });
+  }
+
   try {
-    const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (typeof email !== "string" || typeof password !== "string" || !user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "12h" });
+    return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
-    res.status(500).json({ message: "Login failed" });
+    console.error("Login failed:", err);
+    return res.status(500).json({ message: "Unable to log in" });
   }
 });
 
@@ -179,37 +174,7 @@ app.get("/api/admin/orders", authenticateToken, requireAdmin, async (req, res) =
 });
 
 
-// Image proxy route to handle CORS issues
-app.get("/api/proxy-image", async (req, res) => {
-  try {
-    const { url } = req.query;
-    if (!url) {
-      return res.status(400).json({ message: "Image URL required" });
-    }
-
-    const https = require('https');
-    const http = require('http');
-    const protocol = url.startsWith('https') ? https : http;
-
-    protocol.get(url, (imageResponse) => {
-      // Set CORS headers to prevent ORB blocking
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET');
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      res.setHeader('Content-Type', imageResponse.headers['content-type'] || 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
-      
-      // Pipe the image data to response
-      imageResponse.pipe(res);
-    }).on('error', (err) => {
-      console.error('Error fetching image:', err);
-      res.status(500).json({ message: "Failed to fetch image" });
-    });
-  } catch (error) {
-    console.error('Proxy error:', error);
-    res.status(500).json({ message: "Proxy error" });
-  }
-});
+// Image proxy removed: arbitrary URL fetching enabled SSRF against internal services.
 
 // Test route
 app.get("/", (req, res) => {
