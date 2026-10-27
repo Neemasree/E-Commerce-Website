@@ -29,6 +29,8 @@ jobs:
         run: |
           npm audit --prefix backend --json > backend-audit.json || true
           node scripts/summarize-npm-audit.cjs backend-audit.json
+      - name: Check backend JavaScript syntax
+        run: find backend -type f -name '*.js' -not -path '*/node_modules/*' -print0 | xargs -0 -n1 node --check
       - name: Run backend tests
         run: npm test --prefix backend
 
