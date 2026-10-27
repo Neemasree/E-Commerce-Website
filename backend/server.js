@@ -10,7 +10,19 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 }
 
 const app = express();
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Origin not allowed by CORS"));
+  }
+}));
 app.use(express.json({ limit: '20kb' }));
 
 // MongoDB connection and auto-seed
@@ -175,6 +187,15 @@ app.get("/api/admin/orders", authenticateToken, requireAdmin, async (req, res) =
 
 
 // Image proxy removed: arbitrary URL fetching enabled SSRF against internal services.
+
+// Readiness endpoint for deployment health checks.
+app.get("/health", (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  return res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? "ok" : "not_ready",
+    database: databaseReady ? "connected" : "disconnected"
+  });
+});
 
 // Test route
 app.get("/", (req, res) => {
