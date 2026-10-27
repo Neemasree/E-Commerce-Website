@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, getItemQuantity } = useContext(CartContext);
   const [isAdding, setIsAdding] = useState(false);
 
   const getImageUrl = (imageUrl) =>
@@ -18,6 +18,9 @@ const ProductCard = ({ product }) => {
     addToCart(product);
     setIsAdding(false);
   };
+
+  const quantityInCart = getItemQuantity(product._id);
+  const maxInCart = Number.isInteger(product.stock) && quantityInCart >= product.stock;
 
   const discountPercentage = product.offerPrice
     ? Math.round(
@@ -65,10 +68,12 @@ const ProductCard = ({ product }) => {
             product.stock <= 0 ? "out-of-stock" : ""
           } ${isAdding ? "loading" : ""}`}
           onClick={handleAddToCart}
-          disabled={isAdding || product.stock <= 0}
+          disabled={isAdding || product.stock <= 0 || maxInCart}
         >
           {product.stock <= 0
             ? "Out of Stock"
+            : maxInCart
+            ? "Stock Limit Reached"
             : isAdding
             ? "Adding..."
             : "Add to Basket"}
