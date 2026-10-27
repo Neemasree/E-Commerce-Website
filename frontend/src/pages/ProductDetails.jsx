@@ -6,7 +6,7 @@ import { CartContext } from '../context/CartContext';
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, getItemQuantity } = useContext(CartContext);
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,20 +39,23 @@ const ProductDetails = () => {
   }, [fetchProduct]);
 
   const handleAddToCart = async () => {
+    const quantityToAdd = Math.min(quantity, availableToAdd);
+    if (!product || quantityToAdd < 1) return;
+
     setIsAdding(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    for (let i = 0; i < quantity; i++) {
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    for (let i = 0; i < quantityToAdd; i++) {
       addToCart(product);
     }
-    
+
     setIsAdding(false);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
 
   const incrementQuantity = () => {
-    setQuantity(prev => prev + 1);
+    setQuantity((prev) => Math.min(prev + 1, Math.max(1, availableToAdd)));
   };
 
   const decrementQuantity = () => {
@@ -87,7 +90,12 @@ const ProductDetails = () => {
     );
   }
 
-  const discountPercentage = product.offerPrice 
+  const cartQuantity = getItemQuantity(product._id);
+  const availableToAdd = Number.isInteger(product.stock)
+    ? Math.max(0, product.stock - cartQuantity)
+    : 99;
+
+  const discountPercentage = product.offerPrice
     ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
     : 0;
 
@@ -144,13 +152,6 @@ const ProductDetails = () => {
 
             <h1 className="product-title">{product.name}</h1>
             
-            <div className="product-rating">
-              <div className="stars">
-                {'⭐'.repeat(5)}
-              </div>
-              <span className="rating-text">(4.5) • 127 reviews</span>
-            </div>
-
             <div className="product-pricing">
               {product.offerPrice ? (
                 <div className="pricing-with-offer">
@@ -201,6 +202,7 @@ const ProductDetails = () => {
                 <button 
                   onClick={incrementQuantity}
                   className="quantity-btn"
+                  disabled={quantity >= Math.max(1, availableToAdd)}
                 >
                   +
                 </button>
@@ -211,7 +213,7 @@ const ProductDetails = () => {
               <button 
                 onClick={handleAddToCart}
                 className={`btn btn-primary add-to-cart ${isAdding ? 'loading' : ''}`}
-                disabled={isAdding}
+                disabled={isAdding || availableToAdd <= 0}
               >
                 {isAdding ? (
                   <>
@@ -245,7 +247,7 @@ const ProductDetails = () => {
                 <strong>Category:</strong> {product.category}
               </div>
               <div className="meta-item">
-                <strong>Stock:</strong> {product.stock || 'In Stock'}
+                <strong>Stock:</strong> {Number.isInteger(product.stock) ? (product.stock > 0 ? product.stock : 'Out of Stock') : 'Availability unknown'}
               </div>
               <div className="meta-item">
                 <strong>SKU:</strong> {product._id.slice(-8).toUpperCase()}
