@@ -239,6 +239,7 @@ const AdminDashboard = () => {
                     description: e.target.value,
                   })
                 }
+                required
               />
 
               <button type="submit">Add Product</button>
@@ -293,6 +294,7 @@ const AdminDashboard = () => {
                   onChange={(e) =>
                     setEditForm({ ...editForm, description: e.target.value })
                   }
+                  required
                 />
                 <div className="form-buttons">
                   <button type="submit">Update Product</button>
