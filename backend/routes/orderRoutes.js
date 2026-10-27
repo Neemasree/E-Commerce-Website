@@ -10,13 +10,21 @@ const isValidId = (value) => mongoose.isValidObjectId(value);
 // Create an order for the authenticated user.
 // The server recalculates prices and totals from database records instead of trusting client totals.
 router.post('/', authenticateToken, async (req, res) => {
-  const { items, address, paymentMethod = 'cod' } = req.body;
+  const { items, address, paymentMethod = 'cod' } = req.body || {};
 
-  if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: 'An order must contain at least one item' });
+  if (!Array.isArray(items) || items.length === 0 || items.length > 50) {
+    return res.status(400).json({ message: 'An order must contain between 1 and 50 items' });
   }
-  if (!address || typeof address !== 'object') {
-    return res.status(400).json({ message: 'Delivery address is required' });
+  const requiredAddressFields = ['fullName', 'email', 'phone', 'address', 'city', 'pincode'];
+  if (!address || typeof address !== 'object' || Array.isArray(address) ||
+      requiredAddressFields.some((field) => typeof address[field] !== 'string' || !address[field].trim())) {
+    return res.status(400).json({ message: 'Complete delivery address details are required' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email.trim())) {
+    return res.status(400).json({ message: 'Enter a valid email address' });
+  }
+  if (!/^\d{10}$/.test(address.phone.trim()) || !/^\d{6}$/.test(address.pincode.trim())) {
+    return res.status(400).json({ message: 'Enter a valid 10-digit phone number and 6-digit pincode' });
   }
   if (!['cod', 'card', 'upi'].includes(paymentMethod)) {
     return res.status(400).json({ message: 'Unsupported payment method' });
@@ -35,11 +43,11 @@ router.post('/', authenticateToken, async (req, res) => {
       if (!product) {
         return res.status(400).json({ message: 'One or more products are unavailable' });
       }
-      if (!Number.isFinite(product.price) || product.price < 0 || (product.stock != null && product.stock < item.quantity)) {
+      if (!Number.isFinite(product.price) || product.price < 0 || !Number.isInteger(product.stock) || product.stock < item.quantity) {
         return res.status(409).json({ message: `Insufficient stock for ${product.name}` });
       }
 
-      const unitPrice = Number.isFinite(product.offerPrice) && product.offerPrice > 0
+      const unitPrice = Number.isFinite(product.offerPrice) && product.offerPrice > 0 && product.offerPrice <= product.price
         ? product.offerPrice
         : product.price;
       subtotal += unitPrice * item.quantity;
@@ -121,26 +129,50 @@ router.get('/admin/all', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Customers can cancel only their own pending order.
+// Customers can cancel only their own pending order. Inventory is restored atomically.
 router.put('/:id/cancel', authenticateToken, async (req, res) => {
   if (!isValidId(req.params.id)) {
     return res.status(400).json({ message: 'Invalid order ID' });
   }
 
-  try {
-    const order = await Order.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id, status: 'pending' },
-      { $set: { status: 'cancelled' } },
-      { new: true, runValidators: true }
-    );
+  const session = await mongoose.startSession();
+  let cancelledOrder;
 
-    if (!order) {
-      return res.status(404).json({ message: 'Pending order not found for this user' });
-    }
-    res.json(order);
+  try {
+    await session.withTransaction(async () => {
+      const order = await Order.findOneAndUpdate(
+        { _id: req.params.id, user: req.user.id, status: 'pending' },
+        { $set: { status: 'cancelled' } },
+        { new: true, runValidators: true, session }
+      );
+
+      if (!order) {
+        const notCancellable = new Error('Pending order not found for this user');
+        notCancellable.code = 'ORDER_NOT_CANCELLABLE';
+        throw notCancellable;
+      }
+
+      for (const item of order.items) {
+        if (!item.product) continue;
+        await Product.updateOne(
+          { _id: item.product },
+          { $inc: { stock: item.quantity } },
+          { session }
+        );
+      }
+
+      cancelledOrder = order;
+    });
+
+    return res.json(cancelledOrder);
   } catch (error) {
+    if (error.code === 'ORDER_NOT_CANCELLABLE') {
+      return res.status(404).json({ message: error.message });
+    }
     console.error('Order cancellation failed:', error);
-    res.status(500).json({ message: 'Unable to cancel order' });
+    return res.status(500).json({ message: 'Unable to cancel order' });
+  } finally {
+    await session.endSession();
   }
 });
 
