@@ -1,0 +1,38 @@
+name: One-time dependency remediation
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: contains(github.event.head_commit.message, 'chore: run dependency remediation once')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply compatible backend security updates
+        run: npm audit fix --prefix backend
+      - name: Apply compatible frontend security updates
+        run: npm audit fix --prefix frontend
+      - name: Commit updated manifests and lockfiles to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/package.json backend/package-lock.json frontend/package.json frontend/package-lock.json
+          if git diff --cached --quiet; then
+            echo "No dependency manifest changes were needed."
+          else
+            git commit -m "chore: remediate npm dependency vulnerabilities"
+            git push origin HEAD:main
+          fi
