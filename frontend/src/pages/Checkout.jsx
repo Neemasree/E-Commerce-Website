@@ -20,6 +20,7 @@ const Checkout = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -73,6 +74,7 @@ const Checkout = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setSubmitError('');
     try {
       const orderData = {
         items: cartItems.map(item => ({
@@ -99,7 +101,7 @@ const Checkout = () => {
       navigate('/orders', { state: { orderSuccess: true } });
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to place order. Please try again.');
+      setSubmitError(error?.response?.data?.message || error?.message || 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -136,6 +138,7 @@ const Checkout = () => {
         <div className="checkout-content">
           <div className="checkout-form">
             <form onSubmit={handleSubmit}>
+              {submitError && <div className="error-text" role="alert">{submitError}</div>}
               <div className="form-section">
                 <h3>Delivery Information</h3>
                 
