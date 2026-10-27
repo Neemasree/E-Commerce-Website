@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, authenticateToken } = require('../middleware/auth');
 
 function responseRecorder() {
   return {
@@ -52,26 +52,9 @@ test('requireAdmin allows admin users to continue', () => {
   assert.equal(res.statusCode, null);
 });
 
-const { authenticateToken } = require('../middleware/auth');
-
-function authResponseRecorder() {
-  return {
-    statusCode: null,
-    body: null,
-    status(code) {
-      this.statusCode = code;
-      return this;
-    },
-    json(payload) {
-      this.body = payload;
-      return this;
-    }
-  };
-}
-
 test('authenticateToken rejects requests without a bearer token', () => {
   const req = { get: () => undefined };
-  const res = authResponseRecorder();
+  const res = responseRecorder();
   let nextCalled = false;
 
   authenticateToken(req, res, () => { nextCalled = true; });
@@ -81,19 +64,39 @@ test('authenticateToken rejects requests without a bearer token', () => {
   assert.equal(nextCalled, false);
 });
 
-test('authenticateToken rejects malformed or expired tokens', () => {
+test('authenticateToken rejects malformed tokens', () => {
   const previousSecret = process.env.JWT_SECRET;
   process.env.JWT_SECRET = 'test-secret-for-auth-middleware-32-chars';
 
   try {
     const req = { get: () => 'Bearer not-a-valid-token' };
-    const res = authResponseRecorder();
+    const res = responseRecorder();
     let nextCalled = false;
 
     authenticateToken(req, res, () => { nextCalled = true; });
 
     assert.equal(res.statusCode, 401);
     assert.equal(res.body.message, 'Invalid or expired token');
+    assert.equal(nextCalled, false);
+  } finally {
+    if (previousSecret === undefined) delete process.env.JWT_SECRET;
+    else process.env.JWT_SECRET = previousSecret;
+  }
+});
+
+test('authenticateToken refuses to verify tokens without a strong configured secret', () => {
+  const previousSecret = process.env.JWT_SECRET;
+  delete process.env.JWT_SECRET;
+
+  try {
+    const req = { get: () => 'Bearer any-token' };
+    const res = responseRecorder();
+    let nextCalled = false;
+
+    authenticateToken(req, res, () => { nextCalled = true; });
+
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.body.message, 'Authentication is not configured');
     assert.equal(nextCalled, false);
   } finally {
     if (previousSecret === undefined) delete process.env.JWT_SECRET;
