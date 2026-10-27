@@ -106,7 +106,16 @@ npm run create-admin
 
 This command creates or resets only the explicitly configured email. Never commit `backend/.env`. If an older local database was created by a previous version, review any legacy seeded accounts and rotate or remove them before exposing that database.
 
-### 4. Start the backend
+### 4. Seed the sample catalog (optional)
+
+The server no longer creates demo products or default accounts on startup. To add or refresh the sample grocery catalog without deleting other products:
+
+```bash
+cd backend
+npm run seed
+```
+
+### 5. Start the backend
 
 ```bash
 cd backend
@@ -115,7 +124,7 @@ npm run dev
 
 The API defaults to `http://localhost:5000`. The backend allows browser origins listed in `CORS_ORIGINS`; set this to your frontend's exact origin in deployment. Set frontend `VITE_API_BASE_URL` to the backend API origin ending in `/api` (for example, `https://your-backend.example/api`). The `/health` endpoint reports whether MongoDB is connected.
 
-### 5. Start the frontend
+### 6. Start the frontend
 
 In a second terminal:
 
@@ -151,7 +160,7 @@ Run scripts from the relevant folder. Backend and frontend dependencies are mana
 **Backend**
 - `npm start` — start the server.
 - `npm run dev` — start with nodemon.
-- `npm run seed` — insert or update the sample catalog by product name without deleting other products.
+- `npm run seed` — insert or update the sample catalog by product name without deleting other products. It is optional and must be run explicitly.
 - `npm run create-admin` — create or reset the admin account configured in environment variables.
 
 **Frontend**
@@ -167,7 +176,7 @@ The backend `npm test` command runs the built-in Node.js test runner against ded
 - Configure `JWT_SECRET` with a strong random value of at least 32 characters. The backend refuses to start without it.
 - Browser requests are restricted by the `CORS_ORIGINS` allowlist. Configure the exact frontend origin for deployment.
 - Registration normalizes email addresses, validates input, hashes passwords with bcrypt, and issues 12-hour JWTs. Registration requires passwords between 8 and 128 characters.
-- Hard-coded default admin/demo account creation and the arbitrary-URL image proxy have been removed.
+- Hard-coded default admin/demo account creation, automatic sample seeding at server startup, and the arbitrary-URL image proxy have been removed.
 - The product mutation endpoints require authentication and an admin role.
 - `.env`, environment-specific files, dependencies, logs, and build output are excluded by `.gitignore`.
 - Removing a file from the latest commit does not erase it from historical Git commits. Rotate any credentials that may have been exposed in prior history.
