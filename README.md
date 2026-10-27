@@ -45,7 +45,8 @@ flowchart LR
 
 ```text
 E-Commerce-Website/
-├── frontend/             # React + Vite application, .env.example
+├── frontend/             # React + Vite application
+│   └── .env.example      # Frontend API URL template
 ├── backend/
 │   ├── middleware/       # Authentication and admin authorization
 │   ├── models/           # Mongoose models
