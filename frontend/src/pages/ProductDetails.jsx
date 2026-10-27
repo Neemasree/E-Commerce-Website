@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '../services/api';
 import { CartContext } from '../context/CartContext';
@@ -15,30 +15,28 @@ const ProductDetails = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // Use proxy for external images to avoid CORS/ORB issues
-  const getProxiedImageUrl = (imageUrl) => {
-    if (!imageUrl) return 'https://placehold.co/400x400/e8e8e8/666?text=No+Image';
-    if (imageUrl.startsWith('http://localhost') || imageUrl.startsWith('/')) {
-      return imageUrl;
-    }
-    return `http://localhost:5000/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-  };
+  const getImageUrl = (imageUrl) =>
+    imageUrl || 'https://placehold.co/500x400/e8e8e8/666?text=No+Image';
 
-  useEffect(() => {
-    fetchProduct();
-  }, [id]);
+  const fetchProduct = useCallback(async () => {
+    setLoading(true);
+    setProduct(null);
+    setSelectedImage(0);
 
-  const fetchProduct = async () => {
     try {
       const data = await getProductById(id);
       setProduct(data);
     } catch (error) {
       console.error('Error fetching product:', error);
-      navigate('/products');
+      navigate('/products', { replace: true });
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchProduct();
+  }, [fetchProduct]);
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -108,7 +106,7 @@ const ProductDetails = () => {
           <div className="product-images">
             <div className="main-image">
               <img 
-                src={getProxiedImageUrl(images[selectedImage])} 
+                src={getImageUrl(images[selectedImage])} 
                 alt={product.name}
                 onError={(e) => {
                   e.target.src = 'https://placehold.co/500x400/e8e8e8/666?text=No+Image';
@@ -126,7 +124,7 @@ const ProductDetails = () => {
                 {images.map((image, index) => (
                   <img
                     key={index}
-                    src={getProxiedImageUrl(image)}
+                    src={getImageUrl(image)}
                     alt={`${product.name} ${index + 1}`}
                     className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
                     onClick={() => setSelectedImage(index)}
