@@ -129,6 +129,7 @@ const AdminAddProduct = () => {
                   className="form-control"
                   placeholder="Enter product description"
                   rows="4"
+                  required
                 />
               </div>
             </div>
