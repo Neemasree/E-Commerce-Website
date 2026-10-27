@@ -25,6 +25,10 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - name: Install backend dependencies
         run: npm ci --prefix backend
+      - name: Report backend dependency advisories
+        run: |
+          npm audit --prefix backend --json > backend-audit.json || true
+          node scripts/summarize-npm-audit.cjs backend-audit.json
       - name: Run backend tests
         run: npm test --prefix backend
 
@@ -42,6 +46,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
+      - name: Report frontend dependency advisories
+        run: |
+          npm audit --prefix frontend --json > frontend-audit.json || true
+          node scripts/summarize-npm-audit.cjs frontend-audit.json
       - name: Lint frontend
         run: npm run lint --prefix frontend
       - name: Build frontend
