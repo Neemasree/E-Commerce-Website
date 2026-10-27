@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -22,10 +21,6 @@ const Products = () => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    filterAndSortProducts();
-  }, [products, searchTerm, selectedCategory, sortBy]);
-
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
@@ -37,26 +32,18 @@ const Products = () => {
     }
   };
 
-  const filterAndSortProducts = () => {
-    let filtered = products;
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    let filtered = products.filter((product) => {
+      const matchesSearch = !normalizedSearch ||
+        product.name.toLowerCase().includes(normalizedSearch) ||
+        product.category.toLowerCase().includes(normalizedSearch);
+      const matchesCategory = selectedCategory === 'all' ||
+        product.category.toLowerCase() === selectedCategory.toLowerCase();
+      return matchesSearch && matchesCategory;
+    });
 
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product =>
-        product.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    // Sort products
-    filtered.sort((a, b) => {
+    return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
           return (a.offerPrice || a.price) - (b.offerPrice || b.price);
@@ -68,9 +55,7 @@ const Products = () => {
           return 0;
       }
     });
-
-    setFilteredProducts(filtered);
-  };
+  }, [products, searchTerm, selectedCategory, sortBy]);
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -136,8 +121,8 @@ const Products = () => {
                 className="filter-select"
               >
                 <option value="name">Name</option>
-                <option value="price-low">Price: high to low</option>
-                <option value="price-high">Price: low to high</option>
+                <option value="price-low">Price: low to high</option>
+                <option value="price-high">Price: high to low</option>
               </select>
             </div>
 
