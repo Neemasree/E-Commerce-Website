@@ -275,10 +275,15 @@ const seedDatabase = async () => {
       process.env.MONGO_URI || "mongodb://localhost:27017/grocery_db"
     );
     console.log("Connected to MongoDB");
-    await Product.deleteMany({});
-    console.log("Cleared existing products");
-    await Product.insertMany(products);
-    console.log(`Seeded ${products.length} products (6 per category)`);
+    const operations = products.map((product) => ({
+      updateOne: {
+        filter: { name: product.name },
+        update: { $set: product },
+        upsert: true
+      }
+    }));
+    await Product.bulkWrite(operations);
+    console.log(`Seeded or updated ${products.length} catalog products without deleting custom products`);
     process.exit(0);
   } catch (error) {
     console.error("Error:", error);
