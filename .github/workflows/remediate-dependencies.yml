@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   remediate:
-    if: contains(github.event.head_commit.message, 'chore: run dependency remediation once')
     runs-on: ubuntu-latest
     steps:
       - name: Check out main
