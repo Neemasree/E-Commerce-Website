@@ -46,12 +46,17 @@ jobs:
         run: find backend -type f -name '*.js' -not -path '*/node_modules/*' -print0 | xargs -0 -n1 node --check
       - name: Initialize MongoDB replica set
         run: |
+          container_id="$(docker ps -q --filter ancestor=mongo:7 | head -n 1)"
+          if [ -z "$container_id" ]; then
+            echo "MongoDB service container was not found" >&2
+            exit 1
+          fi
           for attempt in {1..30}; do
-            if mongosh --host 127.0.0.1:27017 --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27017"}]})' 2>/dev/null; then break; fi
+            if docker exec "$container_id" mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})' 2>/dev/null; then break; fi
             sleep 2
           done
           for attempt in {1..30}; do
-            if mongosh --host 127.0.0.1:27017 --quiet --eval 'db.hello().isWritablePrimary' | grep -q true; then exit 0; fi
+            if docker exec "$container_id" mongosh --quiet --eval 'db.hello().isWritablePrimary' | grep -q true; then exit 0; fi
             sleep 2
           done
           echo "MongoDB replica set did not become primary" >&2
