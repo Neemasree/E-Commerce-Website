@@ -35,6 +35,18 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
     await mongoose.disconnect();
   });
 
+  const missingRoute = await fetch(`${base}/api/not-a-real-route`);
+  assert.equal(missingRoute.status, 404);
+  assert.deepEqual(await missingRoute.json(), { message: 'Route not found' });
+
+  const malformedJson = await fetch(`${base}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{"email":'
+  });
+  assert.equal(malformedJson.status, 400);
+  assert.deepEqual(await malformedJson.json(), { message: 'Invalid JSON request body' });
+
   const registration = await fetch(`${base}/api/auth/register`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: 'New Customer', email: ' NEW-CUSTOMER@example.test ', password: 'strong-password-123' })
