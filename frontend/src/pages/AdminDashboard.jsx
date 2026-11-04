@@ -21,6 +21,7 @@ const AdminDashboard = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [actionError, setActionError] = useState("");
+  const [productError, setProductError] = useState("");
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -48,11 +49,12 @@ const AdminDashboard = () => {
 
   const fetchProducts = async () => {
     setLoading(true);
+    setProductError("");
     try {
       const data = await getProducts();
       setProducts(data);
     } catch (err) {
-      console.error(err);
+      setProductError(err.response?.data?.message || "Unable to load products");
     } finally {
       setLoading(false);
     }
@@ -64,7 +66,7 @@ const AdminDashboard = () => {
       const data = await getAdminOrders();
       setOrders(data);
     } catch (err) {
-      console.error(err);
+      setActionError(err.response?.data?.message || "Unable to load orders");
       setOrders([]);
     } finally {
       setLoading(false);
@@ -73,6 +75,7 @@ const AdminDashboard = () => {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setProductError("");
     try {
       await createProduct({
         ...newProduct,
@@ -92,7 +95,7 @@ const AdminDashboard = () => {
       });
       fetchProducts();
     } catch (error) {
-      alert("Error adding product ❌",error);
+      setProductError(error.response?.data?.message || error.message || "Unable to add product");
     }
   };
 
@@ -110,6 +113,7 @@ const AdminDashboard = () => {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
+    setProductError("");
     try {
       await updateProduct(editingProduct, {
         ...editForm,
@@ -129,7 +133,7 @@ const AdminDashboard = () => {
       });
       fetchProducts();
     } catch (error) {
-      alert("Error updating product ❌",error);
+      setProductError(error.response?.data?.message || error.message || "Unable to update product");
     }
   };
 
@@ -149,11 +153,12 @@ const AdminDashboard = () => {
   const handleDeleteProduct = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
+        setProductError("");
         await deleteProduct(id);
         alert("Product deleted successfully ✅");
         fetchProducts();
       } catch (error) {
-        alert("Error deleting product ❌",error);
+        setProductError(error.response?.data?.message || error.message || "Unable to delete product");
       }
     }
   };
@@ -202,6 +207,7 @@ const AdminDashboard = () => {
       {/* PRODUCTS */}
       {activeTab === "products" && (
         <>
+          {productError && <p className="error-message" role="alert">{productError}</p>}
           <button onClick={() => setShowAddForm(!showAddForm)}>
             {showAddForm ? "Cancel" : "Add Product"}
           </button>
