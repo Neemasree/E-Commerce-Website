@@ -53,8 +53,10 @@ E-Commerce-Website/
 │   ├── routes/           # API routes
 │   ├── .env.example      # Safe local environment template
 │   └── server.js         # Express app and API endpoints
+├── .github/workflows/ci.yml
+├── render.yaml          # Render API + frontend deployment blueprint
 ├── .gitignore
-├── package.json
+├── package.json         # Legacy root dependencies; app installs are isolated
 └── README.md
 ```
 
@@ -71,7 +73,6 @@ E-Commerce-Website/
 ```bash
 git clone https://github.com/Neemasree/E-Commerce-Website.git
 cd E-Commerce-Website
-npm install
 cd backend
 npm install
 cd ../frontend
@@ -186,6 +187,19 @@ The backend `npm test` command runs the built-in Node.js test runner against ded
 - Real card/UPI processing requires a verified payment-provider integration. Current payment method labels are not proof that payments are processed.
 - CI prints dependency audit findings for both backend and frontend. Review these reports and update vulnerable dependencies before production deployment.
 - Deployment URLs, screenshots, and license information should be added only after they have been verified.
+
+## Deployment (Render)
+
+A starter Render Blueprint is included in `render.yaml` for a Node API and a static Vite frontend.
+
+1. Push the repository to GitHub and create a new Blueprint in Render using this repository.
+2. Create a MongoDB Atlas database (or another MongoDB replica-set deployment) and provide its connection string as the API service's `MONGO_URI`. The database must support transactions because checkout and cancellation use MongoDB sessions.
+3. Keep the generated `JWT_SECRET` private. Render generates a value for this environment variable in the Blueprint.
+4. Confirm the frontend URL and backend URL shown by Render match the `CORS_ORIGINS` and `VITE_API_BASE_URL` values in `render.yaml`. If Render assigns different hostnames, update those values in the Render dashboard and redeploy.
+5. Deploy the backend and verify `https://<your-api-host>/health` returns HTTP 200 with `{"status":"ok","database":"connected"}`.
+6. Open the frontend URL and verify registration, login, product browsing, COD checkout, order history, cancellation, and admin fulfillment using a separately provisioned admin account.
+
+The Blueprint is configuration, not proof of a live deployment. No production URL, MongoDB connection, admin credentials, or payment-provider account is committed. Card and UPI processing are not integrated; checkout currently accepts Cash on Delivery only.
 
 ## License
 
