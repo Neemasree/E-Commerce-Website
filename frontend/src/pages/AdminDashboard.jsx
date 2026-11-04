@@ -172,6 +172,7 @@ const AdminDashboard = () => {
     setEditForm({
       name: "",
       price: "",
+      offerPrice: "",
       category: "",
       stock: "",
       description: "",
