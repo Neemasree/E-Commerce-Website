@@ -168,6 +168,26 @@ app.get("/", (req, res) => {
   res.send("Grocery Backend Running");
 });
 
+// Keep unknown API routes and parser/CORS failures in a predictable JSON format.
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  if (error.message === "Origin not allowed by CORS") {
+    return res.status(403).json({ message: "Origin not allowed" });
+  }
+  if (error.type === "entity.too.large") {
+    return res.status(413).json({ message: "Request body is too large" });
+  }
+  if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
+    return res.status(400).json({ message: "Invalid JSON request body" });
+  }
+  console.error("Unhandled API error:", error.message);
+  return res.status(500).json({ message: "Internal server error" });
+});
+
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
