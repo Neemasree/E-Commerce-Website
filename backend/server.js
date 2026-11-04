@@ -202,23 +202,38 @@ app.use((error, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+let httpServer;
 
 async function startServer() {
   try {
     await mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/grocery_db");
     console.log("MongoDB Connected");
 
-    app.listen(PORT, () => {
+    httpServer = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+    return httpServer;
   } catch (error) {
     console.error("Server startup failed because MongoDB could not connect:", error.message);
     process.exitCode = 1;
+    return null;
+  }
+}
+
+async function shutdown() {
+  if (httpServer) {
+    await new Promise((resolve) => httpServer.close(resolve));
+    httpServer = null;
+  }
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
   }
 }
 
 if (require.main === module) {
   startServer();
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
 }
 
-module.exports = { app, startServer };
+module.exports = { app, startServer, shutdown };
