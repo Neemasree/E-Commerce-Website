@@ -89,6 +89,21 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   });
   assert.equal(unsupportedPayment.status, 400);
 
+  const invalidOfferUpdate = await fetch(`${base}/api/products/${adminProduct._id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ price: 30, offerPrice: 35 })
+  });
+  assert.equal(invalidOfferUpdate.status, 400);
+
+  const validProductUpdate = await fetch(`${base}/api/products/${adminProduct._id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ price: 30, offerPrice: 25 })
+  });
+  assert.equal(validProductUpdate.status, 200);
+  assert.equal((await validProductUpdate.json()).offerPrice, 25);
+
   const checkout = await fetch(`${base}/api/orders`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -121,4 +136,56 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
     method: 'PUT', headers: { Authorization: `Bearer ${token}` }
   });
   assert.equal(secondCancel.status, 404);
+
+  const customerAdminList = await fetch(`${base}/api/admin/orders`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  assert.equal(customerAdminList.status, 403);
+
+  const adminOrderList = await fetch(`${base}/api/admin/orders`, {
+    headers: { Authorization: `Bearer ${adminToken}` }
+  });
+  assert.equal(adminOrderList.status, 200);
+  assert.ok((await adminOrderList.json()).some((entry) => entry._id === order._id));
+
+  const nextOrderResponse = await fetch(`${base}/api/orders`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ product: String(product._id), quantity: 1 }],
+      address: { fullName: 'Integration Customer', email: 'integration@example.test', phone: '9876543210', address: '1 Test Road', city: 'Coimbatore', pincode: '641001' },
+      paymentMethod: 'cod'
+    })
+  });
+  assert.equal(nextOrderResponse.status, 201);
+  const nextOrder = await nextOrderResponse.json();
+
+  const forbiddenStatusUpdate = await fetch(`${base}/api/admin/orders/${nextOrder._id}/status`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'confirmed' })
+  });
+  assert.equal(forbiddenStatusUpdate.status, 403);
+
+  for (const status of ['confirmed', 'shipped', 'delivered']) {
+    const update = await fetch(`${base}/api/admin/orders/${nextOrder._id}/status`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    assert.equal(update.status, 200);
+    assert.equal((await update.json()).status, status);
+  }
+
+  const invalidTransition = await fetch(`${base}/api/admin/orders/${nextOrder._id}/status`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'confirmed' })
+  });
+  assert.equal(invalidTransition.status, 409);
+
+  const deleteAdminProduct = await fetch(`${base}/api/products/${adminProduct._id}`, {
+    method: 'DELETE', headers: { Authorization: `Bearer ${adminToken}` }
+  });
+  assert.equal(deleteAdminProduct.status, 200);
 });
