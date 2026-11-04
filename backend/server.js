@@ -111,6 +111,47 @@ app.get("/api/admin/orders", authenticateToken, requireAdmin, async (req, res) =
 });
 
 
+
+app.patch("/api/admin/orders/:id/status", authenticateToken, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body || {};
+  const transitions = {
+    pending: ["confirmed"],
+    confirmed: ["shipped"],
+    shipped: ["delivered"]
+  };
+
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ message: "Invalid order ID" });
+  }
+  if (!["confirmed", "shipped", "delivered"].includes(status)) {
+    return res.status(400).json({ message: "Unsupported order status" });
+  }
+
+  try {
+    const currentOrder = await Order.findById(id);
+    if (!currentOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    if (!transitions[currentOrder.status]?.includes(status)) {
+      return res.status(409).json({ message: `Order cannot move from ${currentOrder.status} to ${status}` });
+    }
+
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: id, status: currentOrder.status },
+      { $set: { status } },
+      { new: true, runValidators: true }
+    );
+    if (!updatedOrder) {
+      return res.status(409).json({ message: "Order status changed; refresh and try again" });
+    }
+    return res.json(updatedOrder);
+  } catch (error) {
+    console.error("Admin order status update failed:", error);
+    return res.status(500).json({ message: "Unable to update order status" });
+  }
+});
+
 // Image proxy removed: arbitrary URL fetching enabled SSRF against internal services.
 
 // Readiness endpoint for deployment health checks.
