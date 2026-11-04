@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
@@ -17,11 +17,7 @@ const Orders = () => {
   const navigate = useNavigate();
   const orderSuccess = location.state?.orderSuccess;
 
-  useEffect(() => {
-    if (user) fetchOrders();
-  }, [user]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -33,7 +29,11 @@ const Orders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) fetchOrders();
+  }, [user, fetchOrders]);
 
   /* ---------------- BUTTON HANDLERS ---------------- */
 
