@@ -129,6 +129,18 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   assert.equal(validProductUpdate.status, 200);
   assert.equal((await validProductUpdate.json()).offerPrice, 25);
 
+  const insufficientStock = await fetch(`${base}/api/orders`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ product: String(product._id), quantity: 6 }],
+      address: { fullName: 'Integration Customer', email: 'integration@example.test', phone: '9876543210', address: '1 Test Road', city: 'Coimbatore', pincode: '641001' },
+      paymentMethod: 'cod'
+    })
+  });
+  assert.equal(insufficientStock.status, 409);
+  assert.equal((await Product.findById(product._id)).stock, 5);
+
   const checkout = await fetch(`${base}/api/orders`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -167,6 +179,12 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   const foreignRead = await fetch(`${base}/api/orders`, { headers: { Authorization: `Bearer ${foreignToken}` } });
   assert.equal(foreignRead.status, 200);
   assert.deepEqual(await foreignRead.json(), []);
+
+  const foreignCancel = await fetch(`${base}/api/orders/${order._id}/cancel`, {
+    method: 'PUT', headers: { Authorization: `Bearer ${foreignToken}` }
+  });
+  assert.equal(foreignCancel.status, 404);
+  assert.equal((await Product.findById(product._id)).stock, 3);
 
   const cancel = await fetch(`${base}/api/orders/${order._id}/cancel`, {
     method: 'PUT', headers: { Authorization: `Bearer ${token}` }
