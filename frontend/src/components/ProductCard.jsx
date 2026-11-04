@@ -22,10 +22,9 @@ const ProductCard = ({ product }) => {
   const quantityInCart = getItemQuantity(product._id);
   const maxInCart = Number.isInteger(product.stock) && quantityInCart >= product.stock;
 
-  const discountPercentage = product.offerPrice
-    ? Math.round(
-        ((product.price - product.offerPrice) / product.price) * 100
-      )
+  const hasOffer = product.offerPrice != null && product.offerPrice < product.price;
+  const discountPercentage = hasOffer && product.price > 0
+    ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
     : 0;
 
   return (
@@ -54,9 +53,9 @@ const ProductCard = ({ product }) => {
 
             <div className="product-pricing">
               <span className="offer-price">
-                ₹{product.offerPrice || product.price}
+                ₹{product.offerPrice ?? product.price}
               </span>
-              {product.offerPrice && (
+              {hasOffer && (
                 <span className="original-price">₹{product.price}</span>
               )}
             </div>
