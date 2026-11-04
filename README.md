@@ -56,7 +56,6 @@ E-Commerce-Website/
 ├── .github/workflows/ci.yml
 ├── render.yaml          # Render API + frontend deployment blueprint
 ├── .gitignore
-├── package.json         # Legacy root dependencies; app installs are isolated
 └── README.md
 ```
 
