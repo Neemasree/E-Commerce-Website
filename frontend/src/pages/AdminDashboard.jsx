@@ -36,6 +36,7 @@ const AdminDashboard = () => {
   const [editForm, setEditForm] = useState({
     name: "",
     price: "",
+    offerPrice: "",
     category: "",
     stock: "",
     description: "",
@@ -104,6 +105,7 @@ const AdminDashboard = () => {
     setEditForm({
       name: product.name,
       price: product.price,
+      offerPrice: product.offerPrice ?? "",
       category: product.category,
       stock: product.stock,
       description: product.description,
@@ -118,6 +120,7 @@ const AdminDashboard = () => {
       await updateProduct(editingProduct, {
         ...editForm,
         price: Number(editForm.price),
+        offerPrice: editForm.offerPrice === "" ? null : Number(editForm.offerPrice),
         stock: Number(editForm.stock),
       });
 
@@ -126,6 +129,7 @@ const AdminDashboard = () => {
       setEditForm({
         name: "",
         price: "",
+        offerPrice: "",
         category: "",
         stock: "",
         description: "",
@@ -292,6 +296,16 @@ const AdminDashboard = () => {
                     setEditForm({ ...editForm, price: e.target.value })
                   }
                   required
+                />
+                <input
+                  type="number"
+                  placeholder="Offer Price (optional)"
+                  value={editForm.offerPrice}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, offerPrice: e.target.value })
+                  }
+                  min="0"
+                  step="0.01"
                 />
                 <input
                   placeholder="Image URL"
