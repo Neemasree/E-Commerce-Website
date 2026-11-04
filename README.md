@@ -17,7 +17,7 @@ Freshmart is a full-stack grocery shopping application built with React, Vite, N
 ### Accounts and administration
 - Registration and login with bcrypt password hashing and JWT authentication.
 - Role-aware admin pages.
-- Admin order listing.
+- Admin order listing with guarded fulfillment status transitions.
 - Product create, update, and delete endpoints guarded by JWT authentication and an admin-role check.
 
 ### Stack
@@ -61,7 +61,7 @@ E-Commerce-Website/
 
 ## Prerequisites
 
-- Node.js (use a currently supported LTS release)
+- Node.js 22 (pinned in `.nvmrc` and used by CI)
 - npm
 - MongoDB locally or a MongoDB connection string
 
