@@ -77,6 +77,16 @@ export const getAdminOrders = async () => {
   }
 };
 
+export const updateOrderStatus = async (orderId, status) => {
+  try {
+    const response = await api.patch(`/admin/orders/${orderId}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    throw error;
+  }
+};
+
 // Auth API
 export const login = async (email, password) => {
   try {
