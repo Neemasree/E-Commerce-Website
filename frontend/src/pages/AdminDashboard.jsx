@@ -8,6 +8,7 @@ import {
   updateProduct,
   deleteProduct,
   getAdminOrders,
+  updateOrderStatus,
 } from "../services/api";
 
 const AdminDashboard = () => {
@@ -18,6 +19,8 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -127,6 +130,19 @@ const AdminDashboard = () => {
       fetchProducts();
     } catch (error) {
       alert("Error updating product ❌",error);
+    }
+  };
+
+  const handleOrderStatusUpdate = async (orderId, status) => {
+    setUpdatingOrderId(orderId);
+    setActionError("");
+    try {
+      const updated = await updateOrderStatus(orderId, status);
+      setOrders((current) => current.map((order) => order._id === orderId ? { ...order, status: updated.status } : order));
+    } catch (error) {
+      setActionError(error.response?.data?.message || error.message || "Unable to update order status");
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -359,6 +375,7 @@ const AdminDashboard = () => {
       {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="orders-list">
+          {actionError && <p className="error-message" role="alert">{actionError}</p>}
           {loading ? (
             <div className="loading">Loading orders...</div>
           ) : orders.length === 0 ? (
@@ -391,13 +408,30 @@ const AdminDashboard = () => {
                     <strong>Payment:</strong> {order.paymentMethod || "COD"}
                   </p>
                 </div>
+                <details className="admin-order-items">
+                  <summary>View order details</summary>
+                  <p><strong>Delivery:</strong> {order.address?.fullName}, {order.address?.address}, {order.address?.city} - {order.address?.pincode}</p>
+                  <p><strong>Contact:</strong> {order.address?.phone} · {order.address?.email}</p>
+                  {(order.items || []).map((item, index) => (
+                    <p key={item._id || index}>{item.name} × {item.quantity} — ₹{(item.price * item.quantity).toFixed(2)}</p>
+                  ))}
+                </details>
                 <div className="order-actions">
-                  <button className="btn-small btn-warning">
-                    View Details
-                  </button>
-                  <button className="btn-small btn-success">
-                    Mark Complete
-                  </button>
+                  {order.status === "pending" && (
+                    <button className="btn-small btn-success" disabled={updatingOrderId === order._id} onClick={() => handleOrderStatusUpdate(order._id, "confirmed")}>
+                      {updatingOrderId === order._id ? "Updating..." : "Confirm"}
+                    </button>
+                  )}
+                  {order.status === "confirmed" && (
+                    <button className="btn-small btn-success" disabled={updatingOrderId === order._id} onClick={() => handleOrderStatusUpdate(order._id, "shipped")}>
+                      {updatingOrderId === order._id ? "Updating..." : "Mark Shipped"}
+                    </button>
+                  )}
+                  {order.status === "shipped" && (
+                    <button className="btn-small btn-success" disabled={updatingOrderId === order._id} onClick={() => handleOrderStatusUpdate(order._id, "delivered")}>
+                      {updatingOrderId === order._id ? "Updating..." : "Mark Delivered"}
+                    </button>
+                  )}
                 </div>
               </div>
             ))
