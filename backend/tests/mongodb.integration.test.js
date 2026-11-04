@@ -78,6 +78,17 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   assert.equal(publicProductList.status, 200);
   assert.ok((await publicProductList.json()).some((item) => item._id === adminProduct._id));
 
+  const unsupportedPayment = await fetch(`${base}/api/orders`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ product: String(product._id), quantity: 1 }],
+      address: { fullName: 'Integration Customer', email: 'integration@example.test', phone: '9876543210', address: '1 Test Road', city: 'Coimbatore', pincode: '641001' },
+      paymentMethod: 'card'
+    })
+  });
+  assert.equal(unsupportedPayment.status, 400);
+
   const checkout = await fetch(`${base}/api/orders`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
