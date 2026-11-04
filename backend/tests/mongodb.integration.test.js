@@ -3,14 +3,14 @@ const test = require('node:test');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const secret = 'freshmart-integration-test-secret-at-least-32-chars';
+process.env.JWT_SECRET = secret;
 const { app } = require('../server');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 
 const uri = process.env.MONGO_INTEGRATION_URI;
-const secret = 'freshmart-integration-test-secret-at-least-32-chars';
-process.env.JWT_SECRET = secret;
 
 test('real MongoDB checkout, ownership, and cancellation integration', { skip: !uri }, async (t) => {
   process.env.JWT_SECRET = secret;
