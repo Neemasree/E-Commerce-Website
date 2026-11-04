@@ -243,35 +243,9 @@ const Checkout = () => {
                     </div>
                   </label>
 
-                  <label className="payment-option">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="card"
-                      checked={formData.paymentMethod === 'card'}
-                      onChange={handleChange}
-                    />
-                    <span className="payment-icon">💳</span>
-                    <div>
-                      <strong>Credit/Debit Card</strong>
-                      <p>Pay securely with your card</p>
-                    </div>
-                  </label>
-
-                  <label className="payment-option">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="upi"
-                      checked={formData.paymentMethod === 'upi'}
-                      onChange={handleChange}
-                    />
-                    <span className="payment-icon">📱</span>
-                    <div>
-                      <strong>UPI Payment</strong>
-                      <p>Pay using UPI apps</p>
-                    </div>
-                  </label>
+                  <p className="payment-note">
+                    Online card and UPI payments are not connected yet. Cash on Delivery is currently the only available payment method.
+                  </p>
                 </div>
               </div>
             </form>
