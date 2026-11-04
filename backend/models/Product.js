@@ -12,11 +12,13 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: [true, "Product price is required"],
-      min: [0, "Product price cannot be negative"]
+      min: [0, "Product price cannot be negative"],
+      max: [1000000000, "Product price is too large"]
     },
     offerPrice: {
       type: Number,
       min: [0, "Offer price cannot be negative"],
+      max: [1000000000, "Offer price is too large"],
       validate: {
         validator(value) {
           return value == null || !Number.isFinite(this.price) || value <= this.price;
@@ -27,7 +29,8 @@ const productSchema = new mongoose.Schema(
     image: {
       type: String,
       required: [true, "Product image is required"],
-      trim: true
+      trim: true,
+      maxlength: [2048, "Product image URL cannot exceed 2048 characters"]
     },
     category: {
       type: String,
@@ -40,6 +43,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Stock quantity is required"],
       min: [0, "Stock cannot be negative"],
+      max: [10000000, "Stock quantity is too large"],
       validate: {
         validator: Number.isInteger,
         message: "Stock must be a whole number"
