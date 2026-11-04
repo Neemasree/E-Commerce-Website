@@ -95,7 +95,8 @@ const ProductDetails = () => {
     ? Math.max(0, product.stock - cartQuantity)
     : 99;
 
-  const discountPercentage = product.offerPrice
+  const hasOffer = product.offerPrice != null && product.offerPrice < product.price;
+  const discountPercentage = hasOffer && product.price > 0
     ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
     : 0;
 
@@ -153,7 +154,7 @@ const ProductDetails = () => {
             <h1 className="product-title">{product.name}</h1>
             
             <div className="product-pricing">
-              {product.offerPrice ? (
+              {hasOffer ? (
                 <div className="pricing-with-offer">
                   <span className="offer-price">₹{product.offerPrice}</span>
                   <span className="original-price">₹{product.price}</span>
