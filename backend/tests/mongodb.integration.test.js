@@ -19,11 +19,13 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
 
   const password = await bcrypt.hash('integration-password', 4);
   const user = await User.create({ name: 'Integration Customer', email: 'integration@example.test', password });
+  const admin = await User.create({ name: 'Integration Admin', email: 'admin-integration@example.test', password, role: 'admin' });
   const product = await Product.create({
     name: 'Integration Apples', price: 100, offerPrice: 80, image: 'https://example.test/apples.jpg',
     category: 'fruit', stock: 5, description: 'Integration test product'
   });
   const token = jwt.sign({ id: user._id, role: 'user' }, secret, { expiresIn: '5m' });
+  const adminToken = jwt.sign({ id: admin._id, role: 'admin' }, secret, { expiresIn: '5m' });
   const server = app.listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -32,6 +34,49 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
     await Promise.all([User.deleteMany({}), Product.deleteMany({}), Order.deleteMany({})]);
     await mongoose.disconnect();
   });
+
+  const registration = await fetch(`${base}/api/auth/register`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'New Customer', email: ' NEW-CUSTOMER@example.test ', password: 'strong-password-123' })
+  });
+  assert.equal(registration.status, 201);
+  const registered = await registration.json();
+  assert.equal(registered.user.email, 'new-customer@example.test');
+  assert.ok(registered.token);
+
+  const duplicateRegistration = await fetch(`${base}/api/auth/register`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'New Customer', email: 'new-customer@example.test', password: 'strong-password-123' })
+  });
+  assert.equal(duplicateRegistration.status, 409);
+
+  const login = await fetch(`${base}/api/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: ' NEW-CUSTOMER@example.test ', password: 'strong-password-123' })
+  });
+  assert.equal(login.status, 200);
+  assert.ok((await login.json()).token);
+
+  const forbiddenProductCreate = await fetch(`${base}/api/products`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Forbidden Product', price: 10, image: 'https://example.test/x.jpg', category: 'test', stock: 1, description: 'Should not be created' })
+  });
+  assert.equal(forbiddenProductCreate.status, 403);
+
+  const adminProductCreate = await fetch(`${base}/api/products`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Admin Created Product', price: 25, offerPrice: 20, image: 'https://example.test/admin.jpg', category: 'test', stock: 4, description: 'Created by admin integration test', injectedField: 'must be ignored' })
+  });
+  assert.equal(adminProductCreate.status, 201);
+  const adminProduct = await adminProductCreate.json();
+  assert.equal(adminProduct.name, 'Admin Created Product');
+  assert.equal(adminProduct.injectedField, undefined);
+
+  const publicProductList = await fetch(`${base}/api/products?search=Admin%20Created`);
+  assert.equal(publicProductList.status, 200);
+  assert.ok((await publicProductList.json()).some((item) => item._id === adminProduct._id));
 
   const checkout = await fetch(`${base}/api/orders`, {
     method: 'POST',
