@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../context/AuthContext";
 import "../Styles/AdminDashboard.css";
 
@@ -43,12 +43,7 @@ const AdminDashboard = () => {
     image: "",
   });
 
-  useEffect(() => {
-    if (activeTab === "products") fetchProducts();
-    if (activeTab === "orders") fetchOrders();
-  }, [activeTab]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setProductError("");
     try {
@@ -59,9 +54,9 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     setActionError("");
     try {
@@ -73,7 +68,12 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "products") fetchProducts();
+    if (activeTab === "orders") fetchOrders();
+  }, [activeTab, fetchProducts, fetchOrders]);
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
