@@ -2,11 +2,13 @@ import { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '../services/api';
 import { CartContext } from '../context/CartContext';
+import { AuthContext } from '../context/AuthContext';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, getItemQuantity } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,9 +47,7 @@ const ProductDetails = () => {
     setIsAdding(true);
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    for (let i = 0; i < quantityToAdd; i++) {
-      addToCart(product);
-    }
+    addToCart(product, quantityToAdd);
 
     setIsAdding(false);
     setShowToast(true);
@@ -230,9 +230,14 @@ const ProductDetails = () => {
               
               <button 
                 className="btn btn-success buy-now"
+                disabled={availableToAdd <= 0}
                 onClick={() => {
-                  for (let i = 0; i < quantity; i++) {
-                    addToCart(product);
+                  const quantityToAdd = Math.min(quantity, availableToAdd);
+                  if (quantityToAdd < 1) return;
+                  addToCart(product, quantityToAdd);
+                  if (!user) {
+                    navigate('/login', { state: { from: '/checkout' } });
+                    return;
                   }
                   navigate('/checkout');
                 }}
