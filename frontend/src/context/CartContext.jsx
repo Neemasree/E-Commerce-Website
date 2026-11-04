@@ -7,8 +7,13 @@ export const CartProvider = ({ children }) => {
   // ✅ Lazy initialization (NO useEffect setState)
   const [cartItems, setCartItems] = useState(() => {
     try {
-      const savedCart = localStorage.getItem("cart");
-      return savedCart ? JSON.parse(savedCart) : [];
+      const savedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      if (!Array.isArray(savedCart)) return [];
+      return savedCart.filter((item) =>
+        item && typeof item === "object" &&
+        typeof item._id === "string" &&
+        Number.isInteger(item.quantity) && item.quantity > 0
+      );
     } catch {
       return [];
     }
@@ -16,7 +21,11 @@ export const CartProvider = ({ children }) => {
 
   // ✅ Side-effect ONLY syncing to localStorage (allowed)
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
+    try {
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+    } catch {
+      // The cart remains usable in memory if browser storage is unavailable or full.
+    }
   }, [cartItems]);
 
   const addToCart = (product, requestedQuantity = 1) => {
@@ -65,7 +74,7 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () =>
     cartItems.reduce(
-      (sum, item) => sum + (item.offerPrice || item.price) * item.quantity,
+      (sum, item) => sum + (item.offerPrice ?? item.price) * item.quantity,
       0
     );
 
