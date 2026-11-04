@@ -19,7 +19,6 @@ const Orders = () => {
 
   useEffect(() => {
     if (user) fetchOrders();
-    else setLoading(false);
   }, [user]);
 
   const fetchOrders = async () => {
@@ -105,14 +104,6 @@ const Orders = () => {
 
   /* ---------------- STATES ---------------- */
 
-  if (loading) {
-    return (
-      <div className="orders-page">
-        <div className="container">Loading orders...</div>
-      </div>
-    );
-  }
-
   if (!user) {
     return (
       <div className="orders-page">
@@ -121,6 +112,14 @@ const Orders = () => {
           <p>Your order history will appear here after you log in.</p>
           <Link to="/login" state={{ from: "/orders" }} className="btn btn-primary">Login</Link>
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="orders-page">
+        <div className="container">Loading orders...</div>
       </div>
     );
   }
