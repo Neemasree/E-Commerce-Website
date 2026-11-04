@@ -26,7 +26,7 @@ router.post('/', authenticateToken, async (req, res) => {
   if (!/^\d{10}$/.test(address.phone.trim()) || !/^\d{6}$/.test(address.pincode.trim())) {
     return res.status(400).json({ message: 'Enter a valid 10-digit phone number and 6-digit pincode' });
   }
-  if (!['cod', 'card', 'upi'].includes(paymentMethod)) {
+  if (paymentMethod !== 'cod') {
     return res.status(400).json({ message: 'Unsupported payment method' });
   }
 
