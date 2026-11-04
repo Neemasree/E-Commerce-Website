@@ -22,6 +22,8 @@ const Orders = () => {
   }, [user]);
 
   const fetchOrders = async () => {
+    setLoading(true);
+    setError("");
     try {
       const data = await getOrders();
       setOrders(data || []);
