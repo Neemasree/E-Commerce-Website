@@ -2,7 +2,7 @@
 
 Freshmart is a full-stack grocery shopping application built with React, Vite, Node.js, Express, and MongoDB. The app includes a searchable product catalog, shopping cart, checkout flow, customer order history, and protected admin screens.
 
-> **Project status:** Portfolio/learning project. COD/Card/UPI are stored as order payment-method choices; do not treat card or UPI checkout as a real payment gateway unless a provider integration is added and verified.
+> **Project status:** Portfolio/learning project. Cash on Delivery is the only enabled payment method. Card and UPI processing are not implemented.
 
 ## Features
 
