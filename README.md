@@ -152,6 +152,7 @@ Vite normally serves the frontend at `http://localhost:5173`.
 | POST | `/api/orders` | Place an order | Authenticated customer |
 | GET | `/api/orders` | View own orders | Authenticated customer |
 | GET | `/api/admin/orders` | View all orders | Admin token |
+| PATCH | `/api/admin/orders/:id/status` | Advance pending → confirmed → shipped → delivered | Admin token |
 
 All protected requests should send `Authorization: Bearer <token>`.
 
@@ -171,7 +172,7 @@ Run scripts from the relevant folder. Backend and frontend dependencies are mana
 - `npm run lint` — run ESLint.
 - `npm run preview` — preview the production build.
 
-The backend `npm test` command runs the built-in Node.js test runner against dedicated `tests/*.test.js` files. Current tests cover JWT/admin middleware, product/order schema validation, checkout pricing and inventory updates, and cancellation stock restoration using mocked database calls. A real MongoDB replica-set integration suite and end-to-end browser tests are still needed.
+The backend `npm test` command runs the built-in Node.js test runner against dedicated `tests/*.test.js` files. Unit tests cover JWT/admin middleware, product/order schema validation, checkout pricing and inventory updates, and cancellation stock restoration with isolated mocks. The MongoDB integration suite additionally exercises registration/login, admin-only product CRUD, checkout and inventory transactions, customer order isolation, cancellation/restocking, admin order listing, fulfillment transitions, and JSON error responses. In CI, a disposable MongoDB 7 replica set is started so transaction-backed integration tests run against a real database. Browser-level end-to-end tests against a deployed frontend and production MongoDB are still outstanding.
 
 ## Security and known limitations
 
