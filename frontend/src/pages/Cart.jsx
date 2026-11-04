@@ -183,12 +183,8 @@ const Cart = () => {
               </button>
 
               <div className="payment-methods">
-                <p>We accept:</p>
-                <div className="payment-icons">
-                  <span>💳</span>
-                  <span>📱</span>
-                  <span>💰</span>
-                </div>
+                <p>Currently available: Cash on Delivery</p>
+                <p>Online payments are coming soon.</p>
               </div>
             </div>
 
