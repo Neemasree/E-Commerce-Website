@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: freshmart-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://freshmart-frontend.onrender.com
+
+  - type: web
+    name: freshmart-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://freshmart-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
