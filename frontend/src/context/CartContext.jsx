@@ -19,9 +19,10 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product) => {
+  const addToCart = (product, requestedQuantity = 1) => {
     setCartItems((prev) => {
       const stockLimit = Number.isInteger(product.stock) ? Math.max(0, product.stock) : 99;
+      const quantityToAdd = Number.isInteger(requestedQuantity) ? Math.max(1, requestedQuantity) : 1;
       if (stockLimit === 0) return prev;
 
       const existing = prev.find((item) => item._id === product._id);
@@ -29,12 +30,12 @@ export const CartProvider = ({ children }) => {
         if (existing.quantity >= stockLimit) return prev;
         return prev.map((item) =>
           item._id === product._id
-            ? { ...item, ...product, quantity: Math.min(stockLimit, item.quantity + 1) }
+            ? { ...item, ...product, quantity: Math.min(stockLimit, item.quantity + quantityToAdd) }
             : item
         );
       }
 
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...product, quantity: Math.min(stockLimit, quantityToAdd) }];
     });
   };
 
