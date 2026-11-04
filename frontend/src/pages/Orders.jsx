@@ -8,6 +8,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [trackingOrderId, setTrackingOrderId] = useState(null);
 
   const { user } = useContext(AuthContext);
   const { addToCart } = useContext(CartContext);
@@ -37,8 +38,8 @@ const Orders = () => {
 
   /* ---------------- BUTTON HANDLERS ---------------- */
 
-  const handleTrackOrder = (order) => {
-    alert(`Order status: ${(order.status || "pending").toUpperCase()}`);
+  const handleTrackOrder = (orderId) => {
+    setTrackingOrderId((current) => current === orderId ? null : orderId);
   };
 
   const handleReorder = (order) => {
@@ -202,11 +203,31 @@ const Orders = () => {
                   })}
                 </div>
 
+                {trackingOrderId === order._id && (
+                  <div className="order-tracking" aria-label={`Tracking for order ${order._id}`}>
+                    {order.status === "cancelled" ? (
+                      <p>This order was cancelled.</p>
+                    ) : (
+                      <ol>
+                        {["pending", "confirmed", "shipped", "delivered"].map((step, index) => {
+                          const currentIndex = ["pending", "confirmed", "shipped", "delivered"].indexOf(order.status || "pending");
+                          return (
+                            <li key={step} className={index <= currentIndex ? "tracking-step complete" : "tracking-step"}>
+                              <span>{step.charAt(0).toUpperCase() + step.slice(1)}</span>
+                              {index === currentIndex && <strong>Current status</strong>}
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    )}
+                  </div>
+                )}
+
                 {/* ACTIONS */}
                 <div className="order-actions">
                   <button
                     className="btn btn-outline"
-                    onClick={() => handleTrackOrder(order)}
+                    onClick={() => handleTrackOrder(order._id)}
                   >
                     Track Order
                   </button>
