@@ -229,7 +229,7 @@ const Orders = () => {
                     className="btn btn-outline"
                     onClick={() => handleTrackOrder(order._id)}
                   >
-                    Track Order
+                    {trackingOrderId === order._id ? "Hide Tracking" : "Track Order"}
                   </button>
 
                   <button
