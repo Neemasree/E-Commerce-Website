@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import { createOrder } from '../services/api';
@@ -80,7 +80,7 @@ const Checkout = () => {
         items: cartItems.map(item => ({
           product: item._id,
           name: item.name,
-          price: item.offerPrice || item.price,
+          price: item.offerPrice ?? item.price,
           quantity: item.quantity,
           image: item.image
         })),
@@ -106,6 +106,10 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: '/checkout' }} replace />;
+  }
 
   if (cartItems.length === 0) {
     return (
