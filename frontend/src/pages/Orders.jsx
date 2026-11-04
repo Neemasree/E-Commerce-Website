@@ -185,13 +185,13 @@ const Orders = () => {
                       <div key={idx} className="order-item">
                         <img
                           src={
-                            product.image ||
-                            "https://cdn.pixabay.com/photo/2016/03/05/19/02/hamburger-1238246_1280.jpg"
+                            item.image || product.image ||
+                            "https://placehold.co/80x80/e8e8e8/666?text=No+Image"
                           }
-                          alt={product.name}
+                          alt={item.name}
                         />
                         <div>
-                          <h4>{product.name}</h4>
+                          <h4>{item.name}</h4>
                           <p>Qty: {item.quantity}</p>
                           <p>₹{item.price} each</p>
                         </div>
