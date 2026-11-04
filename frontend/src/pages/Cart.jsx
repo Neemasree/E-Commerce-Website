@@ -91,7 +91,7 @@ const Cart = () => {
                   )}
                   
                   <div className="item-pricing">
-                    {item.offerPrice ? (
+                    {item.offerPrice != null && item.offerPrice < item.price ? (
                       <>
                         <span className="offer-price">₹{item.offerPrice}</span>
                         <span className="original-price">₹{item.price}</span>
@@ -130,7 +130,7 @@ const Cart = () => {
                   </div>
 
                   <div className="item-total">
-                    ₹{((item.offerPrice || item.price) * item.quantity).toFixed(2)}
+                    ₹{((item.offerPrice ?? item.price) * item.quantity).toFixed(2)}
                   </div>
 
                   <button 
