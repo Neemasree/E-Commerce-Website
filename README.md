@@ -67,15 +67,15 @@ E-Commerce-Website/
 
 ## Local setup
 
+Run the following commands from the repository root unless a step says otherwise.
+
 ### 1. Clone and install
 
 ```bash
 git clone https://github.com/Neemasree/E-Commerce-Website.git
 cd E-Commerce-Website
-cd backend
-npm install
-cd ../frontend
-npm install
+npm --prefix backend install
+npm --prefix frontend install
 ```
 
 ### 2. Configure backend environment
@@ -101,8 +101,7 @@ Use a unique, randomly generated secret for your own machine and a different sec
 There are no hard-coded default admin or demo credentials. To create or reset an admin account, fill in `ADMIN_NAME`, `ADMIN_EMAIL`, and a unique `ADMIN_PASSWORD` of at least 12 characters in the ignored `backend/.env` file, then run:
 
 ```bash
-cd backend
-npm run create-admin
+npm --prefix backend run create-admin
 ```
 
 This command creates or resets only the explicitly configured email. Never commit `backend/.env`. If an older local database was created by a previous version, review any legacy seeded accounts and rotate or remove them before exposing that database.
@@ -112,26 +111,23 @@ This command creates or resets only the explicitly configured email. Never commi
 The server no longer creates demo products or default accounts on startup. To add or refresh the sample grocery catalog without deleting other products:
 
 ```bash
-cd backend
-npm run seed
+npm --prefix backend run seed
 ```
 
 ### 5. Start the backend
 
 ```bash
-cd backend
-npm run dev
+npm --prefix backend run dev
 ```
 
 The API defaults to `http://localhost:5000`. The backend allows browser origins listed in `CORS_ORIGINS`; set this to your frontend's exact origin in deployment. Set frontend `VITE_API_BASE_URL` to the backend API origin ending in `/api` (for example, `https://your-backend.example/api`). The `/health` endpoint reports whether MongoDB is connected.
 
 ### 6. Start the frontend
 
-Copy `frontend/.env.example` to `frontend/.env.local` and set `VITE_API_BASE_URL` to the backend API URL. Then, in a second terminal:
+Copy `frontend/.env.example` to `frontend/.env.local` and set `VITE_API_BASE_URL` to the backend API URL. Then, in a second terminal opened at the repository root:
 
 ```bash
-cd frontend
-npm run dev
+npm --prefix frontend run dev
 ```
 
 Vite normally serves the frontend at `http://localhost:5173`.
