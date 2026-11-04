@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import api, { getOrders } from "../services/api";
@@ -18,6 +18,7 @@ const Orders = () => {
 
   useEffect(() => {
     if (user) fetchOrders();
+    else setLoading(false);
   }, [user]);
 
   const fetchOrders = async () => {
@@ -105,6 +106,18 @@ const Orders = () => {
     return (
       <div className="orders-page">
         <div className="container">Loading orders...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="orders-page">
+        <div className="container">
+          <h2>Sign in to view your orders</h2>
+          <p>Your order history will appear here after you log in.</p>
+          <Link to="/login" state={{ from: "/orders" }} className="btn btn-primary">Login</Link>
+        </div>
       </div>
     );
   }
