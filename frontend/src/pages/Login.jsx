@@ -134,16 +134,6 @@ const Login = () => {
               </p>
             </div>
 
-            {/* DEMO INFO */}
-            <div className="demo-credentials">
-              <h4>Demo Credentials</h4>
-              <p>
-                <strong>User:</strong> demo@grocerymart.com / demo123
-              </p>
-              <p>
-                <strong>Admin:</strong> admin@grocerymart.com / admin123
-              </p>
-            </div>
           </div>
         </div>
       </div>
