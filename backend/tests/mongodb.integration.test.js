@@ -35,9 +35,22 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
     await mongoose.disconnect();
   });
 
+  const health = await fetch(`${base}/health`);
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok', database: 'connected' });
+
   const missingRoute = await fetch(`${base}/api/not-a-real-route`);
   assert.equal(missingRoute.status, 404);
   assert.deepEqual(await missingRoute.json(), { message: 'Route not found' });
+  assert.equal(missingRoute.headers.get('x-powered-by'), null);
+  assert.equal(missingRoute.headers.get('x-frame-options'), 'DENY');
+  assert.equal(missingRoute.headers.get('cache-control'), 'no-store');
+
+  const blockedOrigin = await fetch(`${base}/api/products`, {
+    headers: { Origin: 'https://untrusted.example.test' }
+  });
+  assert.equal(blockedOrigin.status, 403);
+  assert.deepEqual(await blockedOrigin.json(), { message: 'Origin not allowed' });
 
   const malformedJson = await fetch(`${base}/api/auth/login`, {
     method: 'POST',
@@ -131,6 +144,24 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   assert.equal(order.total, 210);
   assert.equal(order.items[0].price, 80);
   assert.equal((await Product.findById(product._id)).stock, 3);
+
+  const zeroPriceProduct = await Product.create({
+    name: 'Zero Offer Product', price: 50, offerPrice: 0, image: 'https://example.test/free.jpg',
+    category: 'test', stock: 1, description: 'Valid zero price promotion'
+  });
+  const zeroOfferCheckout = await fetch(`${base}/api/orders`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ product: String(zeroPriceProduct._id), quantity: 1 }],
+      address: { fullName: 'Integration Customer', email: 'integration@example.test', phone: '9876543210', address: '1 Test Road', city: 'Coimbatore', pincode: '641001' },
+      paymentMethod: 'cod'
+    })
+  });
+  assert.equal(zeroOfferCheckout.status, 201);
+  const zeroOfferOrder = await zeroOfferCheckout.json();
+  assert.equal(zeroOfferOrder.items[0].price, 0);
+  assert.equal(zeroOfferOrder.total, 50);
 
   const foreignToken = jwt.sign({ id: new mongoose.Types.ObjectId(), role: 'user' }, secret, { expiresIn: '5m' });
   const foreignRead = await fetch(`${base}/api/orders`, { headers: { Authorization: `Bearer ${foreignToken}` } });
