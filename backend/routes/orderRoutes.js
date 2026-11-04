@@ -20,6 +20,10 @@ router.post('/', authenticateToken, async (req, res) => {
       requiredAddressFields.some((field) => typeof address[field] !== 'string' || !address[field].trim())) {
     return res.status(400).json({ message: 'Complete delivery address details are required' });
   }
+  if (address.fullName.trim().length > 100 || address.email.trim().length > 254 ||
+      address.address.trim().length > 300 || address.city.trim().length > 100) {
+    return res.status(400).json({ message: 'Delivery address fields exceed their allowed length' });
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email.trim())) {
     return res.status(400).json({ message: 'Enter a valid email address' });
   }
@@ -47,10 +51,10 @@ router.post('/', authenticateToken, async (req, res) => {
         return res.status(409).json({ message: `Insufficient stock for ${product.name}` });
       }
 
-      const unitPrice = Number.isFinite(product.offerPrice) && product.offerPrice > 0 && product.offerPrice <= product.price
+      const unitPrice = Number.isFinite(product.offerPrice) && product.offerPrice >= 0 && product.offerPrice <= product.price
         ? product.offerPrice
         : product.price;
-      subtotal += unitPrice * item.quantity;
+      subtotal = Number((subtotal + unitPrice * item.quantity).toFixed(2));
       validatedItems.push({
         product: product._id,
         name: product.name,
