@@ -40,14 +40,17 @@ const Orders = () => {
 
   const handleReorder = (order) => {
     order.items.forEach((item) => {
-      const product = item.productId || item;
+      // The API populates item.product; item itself is the immutable order-line snapshot.
+      const product = item.product;
+      if (!product?._id) return; // The catalog item may have been removed since the order.
       addToCart({
         _id: product._id,
-        name: product.name,
-        price: product.price,
+        name: product.name || item.name,
+        price: product.price ?? item.price,
         offerPrice: product.offerPrice,
-        image: product.image,
-      });
+        image: product.image || item.image,
+        stock: product.stock,
+      }, item.quantity);
     });
     navigate("/cart");
   };
@@ -161,7 +164,7 @@ const Orders = () => {
                 {/* ORDER ITEMS */}
                 <div className="order-items">
                   {order.items.map((item, idx) => {
-                    const product = item.productId || item;
+                    const product = item.product || item;
                     return (
                       <div key={idx} className="order-item">
                         <img
@@ -174,10 +177,10 @@ const Orders = () => {
                         <div>
                           <h4>{product.name}</h4>
                           <p>Qty: {item.quantity}</p>
-                          <p>₹{product.price} each</p>
+                          <p>₹{item.price} each</p>
                         </div>
                         <strong>
-                          ₹{(product.price * item.quantity).toFixed(2)}
+                          ₹{(item.price * item.quantity).toFixed(2)}
                         </strong>
                       </div>
                     );
