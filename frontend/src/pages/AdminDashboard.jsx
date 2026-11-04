@@ -63,6 +63,7 @@ const AdminDashboard = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
+    setActionError("");
     try {
       const data = await getAdminOrders();
       setOrders(data);
