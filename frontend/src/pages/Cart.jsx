@@ -4,7 +4,7 @@ import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 
 const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useContext(CartContext);
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartItemsCount } = useContext(CartContext);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState({});
@@ -61,7 +61,7 @@ const Cart = () => {
       <div className="container">
         <div className="page-header">
           <h1 className="page-title">Shopping Cart</h1>
-          <p className="items-count">{cartItems.length} items in your cart</p>
+          <p className="items-count">{getCartItemsCount()} items in your cart</p>
         </div>
 
         <div className="cart-content">
@@ -72,9 +72,6 @@ const Cart = () => {
                   <img 
                     src={item.image || '/api/placeholder/100/100'} 
                     alt={item.name}
-                    onError={(e) => {
-                      e.target.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><text x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="12">${item.name}</text></svg>`;
-                    }}
                   />
                 </div>
 
@@ -150,7 +147,7 @@ const Cart = () => {
               <h3>Order Summary</h3>
               
               <div className="summary-row">
-                <span>Subtotal ({cartItems.length} items)</span>
+                <span>Subtotal ({getCartItemsCount()} items)</span>
                 <span>₹{total.toFixed(2)}</span>
               </div>
               
