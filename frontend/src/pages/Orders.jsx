@@ -9,6 +9,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [trackingOrderId, setTrackingOrderId] = useState(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
+  const [cancelError, setCancelError] = useState("");
 
   const { user } = useContext(AuthContext);
   const { addToCart } = useContext(CartContext);
@@ -61,16 +63,19 @@ const Orders = () => {
   const handleCancelOrder = async (orderId) => {
     if (!window.confirm("Cancel this order?")) return;
 
+    setCancellingOrderId(orderId);
+    setCancelError("");
     try {
       await api.put(`/orders/${orderId}/cancel`);
-
       setOrders((prev) =>
         prev.map((o) =>
           o._id === orderId ? { ...o, status: "cancelled" } : o
         )
       );
-    } catch {
-      alert("Failed to cancel order");
+    } catch (requestError) {
+      setCancelError(requestError.response?.data?.message || "Failed to cancel order. Please try again.");
+    } finally {
+      setCancellingOrderId(null);
     }
   };
 
@@ -142,6 +147,7 @@ const Orders = () => {
   return (
     <div className="orders-page">
       <div className="container">
+        {cancelError && <div className="error-message" role="alert">{cancelError}</div>}
         <div className="page-header">
           <h1 className="page-title">My Orders</h1>
           <p>Track and manage your orders</p>
@@ -242,6 +248,7 @@ const Orders = () => {
                     <button
                       className="btn btn-danger"
                       onClick={() => handleCancelOrder(order._id)}
+                    disabled={cancellingOrderId === order._id}
                     >
                       Cancel Order
                     </button>
