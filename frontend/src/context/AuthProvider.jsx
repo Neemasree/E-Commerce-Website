@@ -9,7 +9,8 @@ function readStoredUser() {
     if (!token || !userData) return null;
     const tokenParts = token.split('.');
     if (tokenParts.length !== 3) throw new Error('Invalid stored token');
-    const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const encodedPayload = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(encodedPayload.padEnd(Math.ceil(encodedPayload.length / 4) * 4, '=')));
     if (!Number.isFinite(payload.exp) || payload.exp * 1000 <= Date.now()) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -17,8 +18,12 @@ function readStoredUser() {
     }
     return JSON.parse(userData);
   } catch {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } catch {
+      // Browser storage may be disabled; the app can still render as signed out.
+    }
     return null;
   }
 }
