@@ -186,6 +186,23 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   assert.equal(zeroOfferOrder.items[0].price, 0);
   assert.equal(zeroOfferOrder.total, 50);
 
+  const freeDeliveryProduct = await Product.create({
+    name: 'Free Delivery Threshold Product', price: 500, image: 'https://example.test/free-delivery.jpg',
+    category: 'test', stock: 1, description: 'Verifies the free delivery threshold'
+  });
+  const freeDeliveryCheckout = await fetch(`${base}/api/orders`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ product: String(freeDeliveryProduct._id), quantity: 1 }],
+      address: { fullName: 'Integration Customer', email: 'integration@example.test', phone: '9876543210', address: '1 Test Road', city: 'Coimbatore', pincode: '641001' },
+      paymentMethod: 'cod'
+    })
+  });
+  assert.equal(freeDeliveryCheckout.status, 201);
+  const freeDeliveryOrder = await freeDeliveryCheckout.json();
+  assert.equal(freeDeliveryOrder.total, 500);
+
   const foreignToken = jwt.sign({ id: new mongoose.Types.ObjectId(), role: 'user' }, secret, { expiresIn: '5m' });
   const foreignRead = await fetch(`${base}/api/orders`, { headers: { Authorization: `Bearer ${foreignToken}` } });
   assert.equal(foreignRead.status, 200);
