@@ -36,6 +36,7 @@ Use this checklist against a running local or deployed environment. Record the U
 - [ ] Verify invalid/backward transitions are rejected.
 
 ## Security and resilience
+- [ ] Repeated registration/login attempts are throttled with HTTP 429 and a Retry-After header.
 - [ ] Untrusted browser origins are rejected by CORS.
 - [ ] Malformed JSON receives a controlled 400 response.
 - [ ] Oversized JSON receives a controlled 413 response.
