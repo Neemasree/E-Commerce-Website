@@ -70,7 +70,7 @@ const Cart = () => {
               <div key={item._id} className={`cart-item ${isUpdating[item._id] ? 'updating' : ''}`}>
                 <div className="item-image">
                   <img 
-                    src={item.image || '/api/placeholder/100/100'} 
+                    src={item.image || '/placeholder-product.svg'} 
                     alt={item.name}
                   />
                 </div>
