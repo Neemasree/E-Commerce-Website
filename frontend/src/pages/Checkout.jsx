@@ -141,7 +141,7 @@ const Checkout = () => {
 
         <div className="checkout-content">
           <div className="checkout-form">
-            <form onSubmit={handleSubmit}>
+            <form id="checkout-form" onSubmit={handleSubmit}>
               {submitError && <div className="error-text" role="alert">{submitError}</div>}
               <div className="form-section">
                 <h3>Delivery Information</h3>
@@ -272,7 +272,7 @@ const Checkout = () => {
                       <p>Qty: {item.quantity}</p>
                     </div>
                     <div className="item-price">
-                      ₹{((item.offerPrice || item.price) * item.quantity).toFixed(2)}
+                      ₹{((item.offerPrice ?? item.price) * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -280,7 +280,7 @@ const Checkout = () => {
 
               <div className="summary-calculations">
                 <div className="summary-row">
-                  <span>Subtotal ({cartItems.length} items)</span>
+                  <span>Subtotal ({cartItems.reduce((count, item) => count + item.quantity, 0)} items)</span>
                   <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 
@@ -300,7 +300,8 @@ const Checkout = () => {
               </div>
 
               <button 
-                onClick={handleSubmit}
+                type="submit"
+                form="checkout-form"
                 className={`btn btn-primary place-order-btn ${loading ? 'loading' : ''}`}
                 disabled={loading}
               >
