@@ -77,7 +77,7 @@ router.post('/', authenticateToken, async (req, res) => {
           const updated = await Product.findOneAndUpdate(
             { _id: item.product, stock: { $gte: item.quantity } },
             { $inc: { stock: -item.quantity } },
-            { new: true, session }
+            { returnDocument: 'after', session }
           );
           if (!updated) {
             const stockError = new Error(`Stock changed during checkout for ${item.name}; please refresh your cart`);
@@ -147,7 +147,7 @@ router.put('/:id/cancel', authenticateToken, async (req, res) => {
       const order = await Order.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id, status: 'pending' },
         { $set: { status: 'cancelled' } },
-        { new: true, runValidators: true, session }
+        { returnDocument: 'after', runValidators: true, session }
       );
 
       if (!order) {
