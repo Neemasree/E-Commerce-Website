@@ -106,13 +106,13 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   const cheapestProductsResponse = await fetch(`${base}/api/products?sortBy=price-low`);
   assert.equal(cheapestProductsResponse.status, 200);
   const cheapestProducts = await cheapestProductsResponse.json();
-  assert.equal(cheapestProducts[0]._id, adminProduct._id);
+  assert.equal(cheapestProducts[0]._id, String(adminProduct._id));
   assert.equal(cheapestProducts[0].effectivePrice, undefined);
 
   const mostExpensiveProductsResponse = await fetch(`${base}/api/products?sortBy=price-high`);
   assert.equal(mostExpensiveProductsResponse.status, 200);
   const mostExpensiveProducts = await mostExpensiveProductsResponse.json();
-  assert.equal(mostExpensiveProducts[0]._id, product._id);
+  assert.equal(mostExpensiveProducts[0]._id, String(product._id));
 
   const unsupportedPayment = await fetch(`${base}/api/orders`, {
     method: 'POST',
