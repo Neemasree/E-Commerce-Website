@@ -25,6 +25,7 @@ Freshmart is a React, Express, and MongoDB grocery storefront. This document sep
 - Atomic inventory recheck during checkout.
 - Customer order ownership checks and order snapshots for historical display.
 - CORS allowlist, bounded JSON body, baseline security headers, no-store API responses, and database readiness endpoint.
+- In-memory IP-based throttling for registration and login (10 attempts per 15 minutes per route and process); distributed throttling remains a production-hardening task.
 - Explicit catalog seeding; no automatic startup demo data.
 
 ## Automated verification
