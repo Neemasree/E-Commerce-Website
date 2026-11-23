@@ -37,7 +37,8 @@ const Products = () => {
     let filtered = products.filter((product) => {
       const matchesSearch = !normalizedSearch ||
         product.name.toLowerCase().includes(normalizedSearch) ||
-        product.category.toLowerCase().includes(normalizedSearch);
+        product.category.toLowerCase().includes(normalizedSearch) ||
+        (product.description || '').toLowerCase().includes(normalizedSearch);
       const matchesCategory = selectedCategory === 'all' ||
         product.category.toLowerCase() === selectedCategory.toLowerCase();
       return matchesSearch && matchesCategory;
@@ -46,7 +47,7 @@ const Products = () => {
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
-          return (a.offerPrice || a.price) - (b.offerPrice || b.price);
+          return (a.offerPrice ?? a.price) - (b.offerPrice ?? b.price);
         case 'price-high':
           return (b.offerPrice || b.price) - (a.offerPrice || a.price);
         case 'name':
