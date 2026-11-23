@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
@@ -22,11 +23,13 @@ const Products = () => {
   }, [searchParams]);
 
   const fetchProducts = async () => {
+    setFetchError('');
     try {
       const data = await getProducts();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setFetchError('We could not load products. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -71,6 +74,22 @@ const Products = () => {
           <div className="loading">
             <div className="spinner"></div>
             <p>Loading products...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="products-page">
+        <div className="container">
+          <div className="no-products" role="alert">
+            <h2>Unable to load products</h2>
+            <p>{fetchError}</p>
+            <button onClick={() => { setLoading(true); fetchProducts(); }} className="btn btn-primary">
+              Try Again
+            </button>
           </div>
         </div>
       </div>
