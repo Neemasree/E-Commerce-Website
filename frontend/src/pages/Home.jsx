@@ -105,6 +105,11 @@ const Home = () => {
               <h3>Grains & Cereals</h3>
               <p>Healthy & wholesome</p>
             </Link>
+            <Link to="/products?category=beverages" className="category-card beverages">
+              <div className="category-icon">🥤</div>
+              <h3>Beverages</h3>
+              <p>Juices and refreshments</p>
+            </Link>
           </div>
         </div>
       </section>
@@ -351,14 +356,14 @@ const Home = () => {
           background: linear-gradient(135deg, #fce4ec 0%, #fce4ec 100%);
         }
 
-        .category-card.grains {
+        .category-card.beverages { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #075985; }\n\n        .category-card.grains {
           background: linear-gradient(135deg, #f3e5f5 0%, #f3e5f5 100%);
         }
 
         .category-card:nth-child(1) { animation-delay: 0.1s; }
         .category-card:nth-child(2) { animation-delay: 0.2s; }
         .category-card:nth-child(3) { animation-delay: 0.3s; }
-        .category-card:nth-child(4) { animation-delay: 0.4s; }
+        .category-card:nth-child(4) { animation-delay: 0.4s; }\n        .category-card:nth-child(5) { animation-delay: 0.5s; }
 
         @keyframes slideUp {
           to {
