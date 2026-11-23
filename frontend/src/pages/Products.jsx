@@ -49,7 +49,7 @@ const Products = () => {
         case 'price-low':
           return (a.offerPrice ?? a.price) - (b.offerPrice ?? b.price);
         case 'price-high':
-          return (b.offerPrice || b.price) - (a.offerPrice || a.price);
+          return (b.offerPrice ?? b.price) - (a.offerPrice || a.price);
         case 'name':
           return a.name.localeCompare(b.name);
         default:
