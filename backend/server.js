@@ -10,7 +10,37 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 }
 
 const app = express();
+app.set("trust proxy", 1);
 app.disable("x-powered-by");
+
+const authRateLimitBuckets = new Map();
+const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_RATE_LIMIT_MAX_REQUESTS = 10;
+const authRateLimitCleanup = setInterval(() => {
+  const now = Date.now();
+  for (const [key, bucket] of authRateLimitBuckets) {
+    if (bucket.resetAt <= now) authRateLimitBuckets.delete(key);
+  }
+}, AUTH_RATE_LIMIT_WINDOW_MS);
+authRateLimitCleanup.unref();
+
+function limitAuthAttempts(req, res, next) {
+  const now = Date.now();
+  const key = `${req.ip}:${req.path}`;
+  let bucket = authRateLimitBuckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    bucket = { count: 0, resetAt: now + AUTH_RATE_LIMIT_WINDOW_MS };
+  }
+  if (bucket.count >= AUTH_RATE_LIMIT_MAX_REQUESTS) {
+    res.setHeader("Retry-After", String(Math.ceil((bucket.resetAt - now) / 1000)));
+    return res.status(429).json({ message: "Too many authentication attempts. Please try again later." });
+  }
+
+  bucket.count += 1;
+  authRateLimitBuckets.set(key, bucket);
+  return next();
+}
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
@@ -46,7 +76,7 @@ const Order = require("./models/Order");
 
 
 // Auth routes
-app.post("/api/auth/register", async (req, res) => {
+app.post("/api/auth/register", limitAuthAttempts, async (req, res) => {
   const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
   const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
   const password = typeof req.body?.password === "string" ? req.body.password : "";
@@ -84,7 +114,7 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", limitAuthAttempts, async (req, res) => {
   const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
   const password = typeof req.body?.password === "string" ? req.body.password : "";
 
@@ -221,6 +251,7 @@ async function startServer() {
 }
 
 async function shutdown() {
+  clearInterval(authRateLimitCleanup);
   if (httpServer) {
     await new Promise((resolve) => httpServer.close(resolve));
     httpServer = null;
