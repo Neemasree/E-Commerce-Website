@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { login as apiLogin, register as apiRegister } from '../services/api';
 
@@ -6,7 +6,16 @@ function readStoredUser() {
   try {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    return token && userData ? JSON.parse(userData) : null;
+    if (!token || !userData) return null;
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) throw new Error('Invalid stored token');
+    const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!Number.isFinite(payload.exp) || payload.exp * 1000 <= Date.now()) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return null;
+    }
+    return JSON.parse(userData);
   } catch {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -16,6 +25,12 @@ function readStoredUser() {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(readStoredUser);
+
+  useEffect(() => {
+    const handleExpiredSession = () => setUser(null);
+    window.addEventListener('auth:expired', handleExpiredSession);
+    return () => window.removeEventListener('auth:expired', handleExpiredSession);
+  }, []);
 
   const login = async (email, password) => {
     const data = await apiLogin(email, password);
