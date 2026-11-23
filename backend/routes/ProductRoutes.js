@@ -67,13 +67,21 @@ router.get('/', async (req, res) => {
       ];
     }
 
+    const priceSort = sortBy === 'price-low' || sortBy === 'price-high';
     const sort = {
-      'price-low': { offerPrice: 1, price: 1 },
-      'price-high': { offerPrice: -1, price: -1 },
+      'price-low': { effectivePrice: 1, name: 1 },
+      'price-high': { effectivePrice: -1, name: 1 },
       name: { name: 1 }
     }[sortBy] || { name: 1 };
 
-    const products = await Product.find(query).sort(sort).limit(200).lean();
+    const pipeline = [
+      { $match: query },
+      ...(priceSort ? [{ $addFields: { effectivePrice: { $ifNull: ['$offerPrice', '$price'] } } }] : []),
+      { $sort: sort },
+      { $limit: 200 },
+      ...(priceSort ? [{ $project: { effectivePrice: 0 } }] : [])
+    ];
+    const products = await Product.aggregate(pipeline);
     res.json(products);
   } catch (error) {
     console.error('Product listing failed:', error);
