@@ -78,6 +78,46 @@ stateDiagram-v2
 ```
 
 
+### Data model
+
+```mermaid
+erDiagram
+    USER ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    PRODUCT o|--o{ ORDER_ITEM : references
+    USER {
+        ObjectId id PK
+        string name
+        string email UK
+        string password_hash
+        string role
+    }
+    PRODUCT {
+        ObjectId id PK
+        string name
+        string category
+        number price
+        number offer_price
+        number stock
+        string image
+    }
+    ORDER {
+        ObjectId id PK
+        ObjectId user FK
+        number total
+        string payment_method
+        string status
+        object address_snapshot
+    }
+    ORDER_ITEM {
+        ObjectId product FK
+        string name_snapshot
+        number unit_price_snapshot
+        number quantity
+        string image_snapshot
+    }
+```
+
 ## Repository layout
 
 ```text
@@ -243,6 +283,13 @@ A starter Render Blueprint is included in `render.yaml` for a Node API and a sta
 6. Open the frontend URL and verify registration, login, product browsing, COD checkout, order history, cancellation, and admin fulfillment using a separately provisioned admin account.
 
 The Blueprint is configuration, not proof of a live deployment. No production URL, MongoDB connection, admin credentials, or payment-provider account is committed. Card and UPI processing are not integrated; checkout currently accepts Cash on Delivery only.
+
+## Project documentation
+
+- [Verified feature inventory](FEATURES.md)
+- [Local setup and launch guide](FINAL_SETUP.md)
+- [Manual acceptance checklist](TESTING_CHECKLIST.md)
+- [Remaining production work](TODO.md)
 
 ## License
 
