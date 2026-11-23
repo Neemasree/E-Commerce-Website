@@ -2,7 +2,30 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const Product = require('../models/Product');
+const User = require('../models/User');
 const Order = require('../models/Order');
+
+
+function validUser(overrides = {}) {
+  return new User({
+    name: 'Test Customer',
+    email: 'customer@example.test',
+    password: 'hashed-password-value',
+    ...overrides
+  });
+}
+
+test('user model accepts a valid account', async () => {
+  await assert.doesNotReject(validUser().validate());
+});
+
+test('user model rejects malformed email addresses', async () => {
+  await assert.rejects(validUser({ email: 'not-an-email' }).validate(), /email/i);
+});
+
+test('user model rejects passwords shorter than eight characters', async () => {
+  await assert.rejects(validUser({ password: 'short' }).validate(), /password/i);
+});
 
 function validProduct(overrides = {}) {
   return new Product({
