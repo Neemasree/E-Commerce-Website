@@ -41,6 +41,43 @@ flowchart LR
     API --> UI
 ```
 
+### Checkout sequence
+
+```mermaid
+sequenceDiagram
+    actor Customer
+    participant UI as React Storefront
+    participant API as Express API
+    participant DB as MongoDB Replica Set
+    Customer->>UI: Submit cart and delivery address
+    UI->>API: POST /api/orders with JWT
+    API->>API: Validate address, items, and payment method
+    API->>DB: Read current product prices and stock
+    DB-->>API: Current catalog records
+    API->>API: Calculate item totals and delivery fee
+    API->>DB: Start transaction
+    API->>DB: Atomically decrement stock
+    API->>DB: Create order with price/address snapshots
+    API->>DB: Commit transaction
+    DB-->>API: Created order
+    API-->>UI: 201 Created
+    UI-->>Customer: Confirmation and order history
+```
+
+### Order lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Confirmed: Admin confirms
+    Confirmed --> Shipped: Admin ships
+    Shipped --> Delivered: Admin delivers
+    Pending --> Cancelled: Customer cancels
+    Cancelled --> [*]
+    Delivered --> [*]
+```
+
+
 ## Repository layout
 
 ```text
@@ -131,6 +168,14 @@ npm --prefix frontend run dev
 ```
 
 Vite normally serves the frontend at `http://localhost:5173`.
+
+## Engineering decisions worth discussing
+
+- **Server-authoritative pricing:** checkout ignores client-supplied prices and reads current prices from MongoDB.
+- **Transactional inventory:** order creation decrements stock and writes the order in one MongoDB transaction; cancellation restores stock in a transaction.
+- **Ownership enforcement:** customers can only read/cancel their own orders; admin actions are protected by backend JWT role checks.
+- **Historical order display:** each line item keeps a name, price, and image snapshot so order history remains readable if a catalog product is later edited or removed.
+- **Safe operational defaults:** demo account seeding and the arbitrary URL image proxy are removed; catalog seeding and admin provisioning are explicit commands.
 
 ## API overview
 
