@@ -119,7 +119,7 @@ const Cart = () => {
                     <button 
                       onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
                       className="quantity-btn"
-                      disabled={isUpdating[item._id] || (Number.isInteger(item.stock) && (item.stock <= 0 || item.quantity >= item.stock))}
+                      disabled={isUpdating[item._id] || item.quantity >= Math.min(Number.isInteger(item.stock) ? Math.max(0, item.stock) : 99, 99)}
                       aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
