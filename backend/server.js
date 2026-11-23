@@ -183,7 +183,7 @@ app.patch("/api/admin/orders/:id/status", authenticateToken, requireAdmin, async
     const updatedOrder = await Order.findOneAndUpdate(
       { _id: id, status: currentOrder.status },
       { $set: { status } },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!updatedOrder) {
       return res.status(409).json({ message: "Order status changed; refresh and try again" });
