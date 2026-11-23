@@ -3,6 +3,8 @@ import { createContext, useState, useEffect } from "react";
 
 export const CartContext = createContext(null);
 
+const MAX_ORDER_QUANTITY = 99;
+
 export const CartProvider = ({ children }) => {
   // ✅ Lazy initialization (NO useEffect setState)
   const [cartItems, setCartItems] = useState(() => {
@@ -13,7 +15,7 @@ export const CartProvider = ({ children }) => {
         item && typeof item === "object" &&
         typeof item._id === "string" &&
         Number.isInteger(item.quantity) && item.quantity > 0
-      );
+      ).map((item) => ({ ...item, quantity: Math.min(item.quantity, MAX_ORDER_QUANTITY) }));
     } catch {
       return [];
     }
@@ -30,7 +32,7 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product, requestedQuantity = 1) => {
     setCartItems((prev) => {
-      const stockLimit = Number.isInteger(product.stock) ? Math.max(0, product.stock) : 99;
+      const stockLimit = Math.min(Number.isInteger(product.stock) ? Math.max(0, product.stock) : MAX_ORDER_QUANTITY, MAX_ORDER_QUANTITY);
       const quantityToAdd = Number.isInteger(requestedQuantity) ? Math.max(1, requestedQuantity) : 1;
       if (stockLimit === 0) return prev;
 
@@ -61,7 +63,7 @@ export const CartProvider = ({ children }) => {
     setCartItems((prev) =>
       prev.map((item) => {
         if (item._id !== productId) return item;
-        const stockLimit = Number.isInteger(item.stock) ? item.stock : 99;
+        const stockLimit = Math.min(Number.isInteger(item.stock) ? Math.max(0, item.stock) : MAX_ORDER_QUANTITY, MAX_ORDER_QUANTITY);
         const nextQuantity = stockLimit <= 0
           ? Math.min(qty, item.quantity)
           : Math.min(qty, stockLimit);
