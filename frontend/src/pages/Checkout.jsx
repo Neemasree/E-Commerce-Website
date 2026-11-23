@@ -263,7 +263,7 @@ const Checkout = () => {
                 {cartItems.map(item => (
                   <div key={item._id} className="order-item">
                     <img 
-                      src={item.image || '/api/placeholder/60/60'} 
+                      src={item.image || '/placeholder-product.svg'} 
                       alt={item.name}
                       className="item-image"
                     />
