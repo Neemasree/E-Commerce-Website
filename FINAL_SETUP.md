@@ -1,186 +1,55 @@
-# 🛒 GroceryMart - Final Complete Setup
+# Freshmart — Local Setup and Launch Guide
 
-## 🚀 ONE-COMMAND STARTUP
+## Requirements
+- Node.js 22
+- npm
+- MongoDB locally or a MongoDB replica-set connection string
 
-### Step 1: Start Backend
-```bash
-cd backend
-npm run dev
-```
+## Install
+Run from the repository root:
 
-### Step 2: Start Frontend (New Terminal)
-```bash
-cd frontend
-npm run dev
-```
+    git clone https://github.com/Neemasree/E-Commerce-Website.git
+    cd E-Commerce-Website
+    npm --prefix backend install
+    npm --prefix frontend install
 
-### Step 3: Open Browser
-Go to: `http://localhost:5173`
+## Configure backend
+Copy backend/.env.example to backend/.env and set MONGO_URI, a unique JWT_SECRET of at least 32 characters, PORT=5000, and CORS_ORIGINS for your frontend origin. Never commit environment files or credentials.
 
----
+## Provision an administrator (optional)
+There are no default admin/demo credentials. Add ADMIN_NAME, ADMIN_EMAIL, and a unique ADMIN_PASSWORD of at least 12 characters to the ignored backend/.env file, then run:
 
-## 🔐 LOGIN CREDENTIALS
+    npm --prefix backend run create-admin
 
-### 👤 Regular User
-- **Email:** demo@grocerymart.com
-- **Password:** demo123
+The script does not print the password. Remove the admin password from the environment after provisioning if it is no longer needed.
 
-### 🔧 Admin User
-- **Email:** admin@grocerymart.com
-- **Password:** admin123
+## Seed the sample catalog (optional)
 
----
+    npm --prefix backend run seed
 
-## ✅ COMPLETE FEATURES
+Seeding is explicit. The server does not create default accounts or sample products on startup.
 
-### 🏠 Customer Features
-- ✅ **Homepage** - Hero slider, categories, featured products
-- ✅ **Product Browsing** - 30 products (6 per category)
-- ✅ **Search & Filter** - By name and category
-- ✅ **Shopping Cart** - Add, remove, update quantities
-- ✅ **Stock Display** - Real-time stock levels
-- ✅ **Checkout** - Complete address form with validation
-- ✅ **Orders** - Order history and tracking
-- ✅ **Authentication** - Login/Register system
+## Start the applications
+Terminal 1:
 
-### 🔧 Admin Features
-- ✅ **Admin Dashboard** - Product and order management
-- ✅ **Add Products** - Complete product creation form
-- ✅ **View All Products** - Table with edit/delete buttons
-- ✅ **Order Management** - View all customer orders
-- ✅ **Stock Management** - Automatic stock updates
-- ✅ **Role-based Access** - Admin-only sections
+    npm --prefix backend run dev
 
-### 📱 Technical Features
-- ✅ **Auto Database Init** - No manual seeding required
-- ✅ **Stock Management** - Reduces on orders
-- ✅ **JWT Authentication** - Secure login system
-- ✅ **Mobile Responsive** - Works on all devices
-- ✅ **Error Handling** - Comprehensive error management
-- ✅ **Loading States** - Professional UX
+Terminal 2:
 
----
+    npm --prefix frontend run dev
 
-## 🎯 TESTING CHECKLIST
+Open http://localhost:5173. The API defaults to http://localhost:5000 and its readiness endpoint is /health. Configure frontend/.env.local from frontend/.env.example with VITE_API_BASE_URL ending in /api.
 
-### Customer Flow
-1. ✅ Visit homepage - See products and categories
-2. ✅ Browse products - Filter by category
-3. ✅ Add to cart - See cart badge update
-4. ✅ View cart - Update quantities
-5. ✅ Login as user - Use demo credentials
-6. ✅ Checkout - Fill address form
-7. ✅ Place order - See confirmation
-8. ✅ View orders - See order history
+## Run checks
 
-### Admin Flow
-1. ✅ Login as admin - Use admin credentials
-2. ✅ Access admin dashboard - See admin link in navbar
-3. ✅ View products - See all 30 products in table
-4. ✅ Add new product - Use the form
-5. ✅ View orders - See all customer orders
-6. ✅ Check stock levels - See real-time stock
+    npm test --prefix backend
+    npm run lint --prefix frontend
+    npm run build --prefix frontend
 
----
+For the real MongoDB integration test locally, set MONGO_INTEGRATION_URI to a replica-set URI. CI provisions a disposable MongoDB 7 replica set automatically.
 
-## 📦 PRODUCT CATALOG
+## Payment notes
+Cash on Delivery is the only implemented payment method. Card and UPI payments are not processed. No demo customer or admin credentials are shipped.
 
-### 🥕 Vegetables (6)
-- Fresh Tomatoes, Organic Carrots, Fresh Spinach
-- Bell Peppers, Fresh Broccoli, Red Onions
-
-### 🥛 Dairy (6)
-- Fresh Milk, Greek Yogurt, Cheddar Cheese
-- Fresh Butter, Cottage Cheese, Paneer
-
-### 🍎 Fruits (6)
-- Fresh Apples, Ripe Bananas, Fresh Oranges
-- Sweet Mangoes, Fresh Grapes, Strawberries
-
-### 🥤 Beverages (6)
-- Orange Juice, Apple Juice, Coconut Water
-- Green Tea, Coffee Beans, Mineral Water
-
-### 🌾 Grains (6)
-- Basmati Rice, Whole Wheat Flour, Oats
-- Quinoa, Corn Flakes, Pasta
-
----
-
-## 🔧 ADMIN CAPABILITIES
-
-### Product Management
-- ✅ Add new products with images
-- ✅ Set prices and offer prices
-- ✅ Manage stock levels
-- ✅ Categorize products
-- ✅ View all products in table
-
-### Order Management
-- ✅ View all customer orders
-- ✅ See customer details
-- ✅ Track order status
-- ✅ View payment methods
-- ✅ Order date and totals
-
----
-
-## 🎨 DESIGN FEATURES
-
-- ✅ **BigBasket-inspired** green theme
-- ✅ **Professional UI** with smooth animations
-- ✅ **Mobile responsive** design
-- ✅ **Clean typography** and spacing
-- ✅ **Intuitive navigation** and user flow
-- ✅ **Loading states** and error handling
-
----
-
-## 🚨 TROUBLESHOOTING
-
-### If Products Don't Show
-- Check if backend is running on port 5000
-- Check browser console for errors
-- Restart backend server
-
-### If Admin Dashboard Empty
-- Login with admin credentials
-- Check if you're accessing /admin/dashboard
-- Verify admin role in database
-
-### If Orders Don't Work
-- Make sure you're logged in
-- Check if cart has items
-- Verify checkout form is complete
-
----
-
-## 🎉 SUCCESS INDICATORS
-
-✅ **Homepage loads** with sliding banners
-✅ **30 products visible** in products page
-✅ **Cart functionality** working
-✅ **User login** successful
-✅ **Admin login** successful
-✅ **Admin dashboard** accessible
-✅ **Add product** form working
-✅ **Orders** being created and displayed
-✅ **Stock levels** updating after orders
-
----
-
-## 📞 FINAL NOTES
-
-This is a **complete, production-ready e-commerce website** with:
-- **Full user authentication**
-- **Admin panel with CRUD operations**
-- **Real-time stock management**
-- **Professional UI/UX**
-- **Mobile responsive design**
-- **Comprehensive error handling**
-
-**Perfect for interviews and portfolio!** 🎯
-
----
-
-**🛒 Happy Shopping with GroceryMart! ✨**
+## Deployment
+A Render Blueprint is included in render.yaml. Configure a MongoDB replica-set URI, confirm the generated API/frontend URLs, verify the API health endpoint, and manually test customer and admin journeys after deployment. Blueprint configuration is not proof of a live deployment.
