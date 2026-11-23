@@ -40,10 +40,10 @@ const ProductCard = ({ product }) => {
               src={getImageUrl(product.image)}
               alt={product.name}
               className="product-image"
-              onError={(e) =>
-                (e.target.src =
-                  "https://placehold.co/400x400/e8e8e8/666?text=No+Image")
-              }
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/placeholder-product.svg";
+              }}
             />
           </div>
 
