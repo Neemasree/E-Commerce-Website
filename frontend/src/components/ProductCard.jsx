@@ -7,7 +7,7 @@ const ProductCard = ({ product }) => {
   const [isAdding, setIsAdding] = useState(false);
 
   const getImageUrl = (imageUrl) =>
-    imageUrl || "https://placehold.co/400x400/e8e8e8/666?text=No+Image";
+    imageUrl || "/placeholder-product.svg";
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
