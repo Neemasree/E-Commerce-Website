@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
@@ -10,19 +10,11 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const categories = ['all', 'vegetables', 'dairy', 'fruits', 'grains', 'beverages'];
 
-  useEffect(() => {
-    fetchProducts();
-    const category = searchParams.get('category');
-    if (category) {
-      setSelectedCategory(category);
-    }
-  }, [searchParams]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setFetchError('');
     try {
       const data = await getProducts();
@@ -33,7 +25,16 @@ const Products = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    setSelectedCategory(searchParams.get('category') || 'all');
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -65,6 +66,7 @@ const Products = () => {
     setSearchTerm('');
     setSelectedCategory('all');
     setSortBy('name');
+    setSearchParams({});
   };
 
   if (loading) {
