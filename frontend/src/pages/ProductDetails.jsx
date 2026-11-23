@@ -18,7 +18,7 @@ const ProductDetails = () => {
   const [showToast, setShowToast] = useState(false);
 
   const getImageUrl = (imageUrl) =>
-    imageUrl || 'https://placehold.co/500x400/e8e8e8/666?text=No+Image';
+    imageUrl || '/placeholder-product.svg';
 
   const fetchProduct = useCallback(async () => {
     setLoading(true);
@@ -102,7 +102,7 @@ const ProductDetails = () => {
 
   const images = product.images && product.images.length > 0 
     ? product.images 
-    : [product.image || 'https://placehold.co/500x400/e8e8e8/666?text=No+Image'];
+    : [product.image || '/placeholder-product.svg'];
 
   return (
     <div className="product-details">
@@ -118,7 +118,8 @@ const ProductDetails = () => {
                 src={getImageUrl(images[selectedImage])} 
                 alt={product.name}
                 onError={(e) => {
-                  e.target.src = 'https://placehold.co/500x400/e8e8e8/666?text=No+Image';
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = '/placeholder-product.svg';
                 }}
               />
               {discountPercentage > 0 && (
@@ -138,7 +139,8 @@ const ProductDetails = () => {
                     className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
                     onClick={() => setSelectedImage(index)}
                     onError={(e) => {
-                      e.target.src = 'https://placehold.co/80x80/e8e8e8/666?text=' + (index + 1);
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/placeholder-product.svg';
                     }}
                   />
                 ))}
