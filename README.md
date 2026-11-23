@@ -175,6 +175,7 @@ The backend `npm test` command runs the built-in Node.js test runner against ded
 - Configure `JWT_SECRET` with a strong random value of at least 32 characters. The backend refuses to start without it.
 - Browser requests are restricted by the `CORS_ORIGINS` allowlist. Configure the exact frontend origin for deployment. API responses disable caching, the Express fingerprint header is disabled, and baseline content-type, frame, referrer, and permissions headers are set.
 - Registration normalizes email addresses, validates input, hashes passwords with bcrypt, and issues 12-hour JWTs. Registration requires passwords between 8 and 128 characters.
+- Registration and login are throttled to 10 attempts per 15 minutes per IP and route in each API process. Multi-instance deployments should replace this in-memory guard with a shared rate-limit store.
 - Hard-coded default admin/demo account creation, automatic sample seeding at server startup, and the arbitrary-URL image proxy have been removed.
 - The product mutation endpoints require authentication and an admin role.
 - `.env`, environment-specific files, dependencies, logs, and build output are excluded by `.gitignore`.
