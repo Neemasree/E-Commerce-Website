@@ -266,6 +266,7 @@ const Checkout = () => {
                       src={item.image || '/placeholder-product.svg'} 
                       alt={item.name}
                       className="item-image"
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/placeholder-product.svg'; }}
                     />
                     <div className="item-details">
                       <h4>{item.name}</h4>
