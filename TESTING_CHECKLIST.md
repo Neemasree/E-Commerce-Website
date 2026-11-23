@@ -1,171 +1,70 @@
-# ✅ FreshMart Groceries - Testing Checklist
+# Freshmart — Manual Acceptance Checklist
 
-## 🏠 Homepage Tests
+Use this checklist against a running local or deployed environment. Record the URL, date, browser, and results before claiming manual acceptance.
 
-- [ ] Page loads without errors
-- [ ] Hero slider auto-rotates (3 slides)
-- [ ] Category cards display correctly
-- [ ] Featured products grid shows 8 products
-- [ ] All images load properly
-- [ ] "Shop Now" button navigates to products page
-- [ ] Features section displays at bottom
-- [ ] Mobile responsive (test on small screen)
+## Environment
+- [ ] Backend starts with a valid MongoDB connection.
+- [ ] GET /health returns HTTP 200 and database=connected.
+- [ ] Frontend loads and API requests use the configured backend URL.
+- [ ] Browser console and network panel show no unexpected errors.
 
-## 🛍️ Products Page Tests
+## Customer journey
+- [ ] Register a customer with a valid email and password.
+- [ ] Invalid email, short password, and duplicate email are rejected.
+- [ ] Log in and log out.
+- [ ] Browse products and open product details.
+- [ ] Search by product name, category, and description.
+- [ ] Filter by category and sort by effective price in both directions.
+- [ ] Add products to cart; refresh and verify persistence.
+- [ ] Change quantities within stock limits and remove items.
+- [ ] Attempt checkout while signed out; login is required.
+- [ ] Submit invalid delivery details and verify inline errors.
+- [ ] Place a COD order and verify server-calculated total and stock change.
+- [ ] Verify the order appears only in the customer's order history.
+- [ ] Track the order status.
+- [ ] Cancel a pending order and verify stock restoration.
+- [ ] Reorder and verify quantities respect current stock.
 
-- [ ] All products display in grid
-- [ ] Search bar works (try "tomato")
-- [ ] Category filter works (select "vegetables")
-- [ ] Sort by price works (low to high, high to low)
-- [ ] Product cards show:
-  - [ ] Product image
-  - [ ] Product name
-  - [ ] Price and offer price
-  - [ ] Discount badge (if applicable)
-  - [ ] "Add to Basket" button
-- [ ] Click product card navigates to details
-- [ ] "Add to Basket" button adds to cart
-- [ ] Loading spinner shows when adding
+## Admin journey
+- [ ] Provision an admin using the environment-based script.
+- [ ] Log in as admin.
+- [ ] Verify a customer cannot access admin pages or admin APIs.
+- [ ] Create, edit, and delete products.
+- [ ] Verify invalid offer prices and stock values are rejected.
+- [ ] View all orders and expand order details.
+- [ ] Advance an order through confirmed, shipped, and delivered.
+- [ ] Verify invalid/backward transitions are rejected.
 
-## 📦 Product Details Page Tests
+## Security and resilience
+- [ ] Untrusted browser origins are rejected by CORS.
+- [ ] Malformed JSON receives a controlled 400 response.
+- [ ] Oversized JSON receives a controlled 413 response.
+- [ ] Invalid product/order IDs receive controlled 400 responses.
+- [ ] A customer cannot read or cancel another customer's order.
+- [ ] A customer cannot mutate products or update fulfillment status.
+- [ ] Insufficient stock does not create an order or decrement inventory.
+- [ ] A second cancellation does not restore stock twice.
+- [ ] No password, JWT, or password hash appears in browser responses or logs.
 
-- [ ] Product details load correctly
-- [ ] Main image displays
-- [ ] Product name and description show
-- [ ] Price and offer price display
-- [ ] Discount percentage shows
-- [ ] Quantity controls work (+/-)
-- [ ] "Add to Cart" button works
-- [ ] "Buy Now" button present
-- [ ] Product features display
-- [ ] Breadcrumb navigation works
-- [ ] Back button returns to previous page
+## Responsive and accessibility
+- [ ] Navigation works on narrow mobile screens.
+- [ ] Catalog, product details, cart, and checkout fit mobile widths.
+- [ ] Forms have usable labels and keyboard focus.
+- [ ] Checkout can be submitted using the keyboard.
+- [ ] Buttons show clear disabled/loading states.
+- [ ] Empty, loading, error, and success states are understandable.
 
-## 🛒 Cart Page Tests
+## Automated checks
+- [ ] GitHub Actions backend job passes, including MongoDB integration.
+- [ ] Frontend lint passes.
+- [ ] Frontend production build passes.
+- [ ] Dependency audit output is reviewed; remaining moderate findings are documented.
 
-- [ ] Cart displays all added items
-- [ ] Item images show correctly
-- [ ] Quantity can be increased
-- [ ] Quantity can be decreased
-- [ ] Remove button deletes item
-- [ ] Cart total calculates correctly
-- [ ] Delivery fee shows (₹50 or FREE)
-- [ ] "Proceed to Checkout" button works
-- [ ] "Continue Shopping" link works
-- [ ] Empty cart shows appropriate message
-
-## 🔐 Login/Register Tests
-
-- [ ] Login form displays
-- [ ] Register form displays (toggle)
-- [ ] Email validation works
-- [ ] Password field is secure (hidden)
-- [ ] Demo credentials work:
-  - Email: demo@freshmart.com
-  - Password: demo123
-- [ ] Error messages show for invalid login
-- [ ] Successful login redirects to homepage
-- [ ] User name shows in navbar after login
-- [ ] Logout button works
-
-## 💳 Checkout Page Tests
-
-- [ ] Checkout page loads
-- [ ] Order summary shows all items
-- [ ] Delivery form displays
-- [ ] All form fields validate:
-  - [ ] Full name required
-  - [ ] Email format validated
-  - [ ] Phone number (10 digits)
-  - [ ] Address required
-  - [ ] City required
-  - [ ] Pincode (6 digits)
-- [ ] Payment method selection works
-- [ ] "Place Order" button works
-- [ ] Order confirmation shows
-- [ ] Redirects to orders page
-
-## 📋 Orders Page Tests
-
-- [ ] Orders page displays
-- [ ] Order history shows
-- [ ] Order details display:
-  - [ ] Order number
-  - [ ] Order date
-  - [ ] Items list
-  - [ ] Delivery address
-  - [ ] Total amount
-  - [ ] Order status
-- [ ] "Track Order" button present
-- [ ] "Reorder" button present
-- [ ] Empty orders shows message
-
-## 📱 Mobile Responsive Tests
-
-Test on mobile view (< 768px):
-- [ ] Navbar collapses to hamburger menu
-- [ ] Mobile menu opens/closes
-- [ ] Product grid adjusts to single column
-- [ ] Cart layout stacks vertically
-- [ ] Checkout form stacks vertically
-- [ ] All buttons are touch-friendly
-- [ ] Text is readable
-- [ ] Images scale properly
-
-## 🎨 UI/UX Tests
-
-- [ ] Green theme (#84c225) consistent
-- [ ] Hover effects work on cards
-- [ ] Buttons have hover states
-- [ ] Loading spinners show during async operations
-- [ ] Smooth transitions and animations
-- [ ] No layout shifts
-- [ ] Footer displays correctly
-- [ ] All links work
-
-## 🔧 Technical Tests
-
-- [ ] No console errors
-- [ ] API calls succeed (check Network tab)
-- [ ] Cart persists on page refresh (localStorage)
-- [ ] Authentication token stored
-- [ ] Images load from CDN
-- [ ] Page load time < 3 seconds
-- [ ] No memory leaks
-
-## 🐛 Common Issues to Check
-
-- [ ] MongoDB is running
-- [ ] Backend server is running (port 5000)
-- [ ] Frontend server is running (port 5173)
-- [ ] Database is seeded with products
-- [ ] CORS is enabled
-- [ ] Environment variables are set
-- [ ] All dependencies installed
-
----
-
-## 📊 Test Results
-
-**Date:** ___________
-**Tester:** ___________
-
-**Passed:** ___ / 100
-**Failed:** ___ / 100
-
-**Notes:**
-_________________________________
-_________________________________
-_________________________________
-
----
-
-## ✅ Sign Off
-
-- [ ] All critical features working
-- [ ] No blocking bugs
-- [ ] Mobile responsive
-- [ ] Ready for demo/deployment
-
-**Approved by:** ___________
-**Date:** ___________
+## Result record
+Environment/URL:
+Date:
+Browser/device:
+Passed:
+Failed:
+Blockers:
+Tester:
