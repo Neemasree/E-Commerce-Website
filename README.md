@@ -12,7 +12,7 @@ Freshmart is a full-stack grocery shopping application built with React, Vite, N
 - Product details and stock information.
 - Cart with quantity controls and persistent client-side state.
 - Checkout form with address, email, phone, pincode, and payment-method validation.
-- Order history, order status display, and reorder flow.
+- Customer order history, order progress timeline, pending-order cancellation, and reorder flow.
 
 ### Accounts and administration
 - Registration and login with bcrypt password hashing and JWT authentication.
@@ -146,6 +146,7 @@ Vite normally serves the frontend at `http://localhost:5173`.
 | DELETE | `/api/products/:id` | Delete a product | Admin token |
 | POST | `/api/orders` | Place an order | Authenticated customer |
 | GET | `/api/orders` | View own orders | Authenticated customer |
+| PUT | `/api/orders/:id/cancel` | Cancel own pending order and restore stock | Authenticated customer |
 | GET | `/api/admin/orders` | View all orders | Admin token |
 | PATCH | `/api/admin/orders/:id/status` | Advance pending → confirmed → shipped → delivered | Admin token |
 
@@ -167,7 +168,7 @@ Run scripts from the relevant folder. Backend and frontend dependencies are mana
 - `npm run lint` — run ESLint.
 - `npm run preview` — preview the production build.
 
-The backend `npm test` command runs the built-in Node.js test runner against dedicated `tests/*.test.js` files. Unit tests cover JWT/admin middleware, product/order schema validation, checkout pricing and inventory updates, and cancellation stock restoration with isolated mocks. The MongoDB integration suite additionally exercises registration/login, admin-only product CRUD, checkout and inventory transactions, customer order isolation, cancellation/restocking, admin order listing, fulfillment transitions, and JSON error responses. To run it locally, set `MONGO_INTEGRATION_URI` to a MongoDB replica-set connection string before running `npm test`; without it, that integration test is skipped. In CI, a disposable MongoDB 7 replica set is started automatically so transaction-backed integration tests run against a real database. Browser-level end-to-end tests against a deployed frontend and production MongoDB are still outstanding.
+The backend `npm test` command runs the built-in Node.js test runner against dedicated `tests/*.test.js` files. The latest verified CI run completed **20/20 backend tests** with no failures, and the frontend lint and production build both passed ([GitHub Actions run](https://github.com/Neemasree/E-Commerce-Website/actions/runs/45128126148)). Unit tests cover JWT/admin middleware, product/order schema validation, checkout pricing and inventory updates, and cancellation stock restoration with isolated mocks. The MongoDB integration suite additionally exercises registration/login, admin-only product CRUD, checkout and inventory transactions, customer order isolation, cancellation/restocking, admin order listing, fulfillment transitions, and JSON error responses. To run it locally, set `MONGO_INTEGRATION_URI` to a MongoDB replica-set connection string before running `npm test`; without it, that integration test is skipped. In CI, a disposable MongoDB 7 replica set is started automatically so transaction-backed integration tests run against a real database. Browser-level end-to-end tests against a deployed frontend and production MongoDB are still outstanding.
 
 ## Security and known limitations
 
