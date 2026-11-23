@@ -256,6 +256,22 @@ test('real MongoDB checkout, ownership, and cancellation integration', { skip: !
   });
   assert.equal(invalidTransition.status, 409);
 
+  for (let attempt = 0; attempt < 9; attempt += 1) {
+    const rejectedLogin = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'new-customer@example.test', password: 'wrong-value' })
+    });
+    assert.equal(rejectedLogin.status, 401);
+  }
+  const rateLimitedLogin = await fetch(`${base}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'new-customer@example.test', password: 'wrong-value' })
+  });
+  assert.equal(rateLimitedLogin.status, 429);
+  assert.ok(Number(rateLimitedLogin.headers.get('retry-after')) > 0);
+
   const deleteAdminProduct = await fetch(`${base}/api/products/${adminProduct._id}`, {
     method: 'DELETE', headers: { Authorization: `Bearer ${adminToken}` }
   });
