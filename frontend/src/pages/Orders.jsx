@@ -250,7 +250,7 @@ const Orders = () => {
                       onClick={() => handleCancelOrder(order._id)}
                     disabled={cancellingOrderId === order._id}
                     >
-                      Cancel Order
+                      {cancellingOrderId === order._id ? 'Cancelling...' : 'Cancel Order'}
                     </button>
                   )}
                 </div>
